@@ -1,49 +1,41 @@
 ---
-title: "Autenticação"
-description: "Obtenha e utilize o access token JWT"
+title: "Autenticacao"
+description: "Como autenticar suas requisicoes na API Safefy"
 ---
 
-A Safefy utiliza **OAuth2 Client Credentials** para autenticação. O token retornado é um JWT e deve ser enviado no header `Authorization`.
+A Safefy utiliza **OAuth2 Client Credentials** para autenticacao. Voce precisa obter um token JWT antes de fazer qualquer outra requisicao.
 
-## Endpoint
+## Como funciona
 
-**POST** `/v1/auth/token`
+```mermaid
+sequenceDiagram
+    participant App as Sua Aplicacao
+    participant Safefy as API Safefy
+    
+    App->>Safefy: POST /v1/auth/token (credenciais)
+    Safefy-->>App: Token JWT (expira em 1h)
+    App->>Safefy: GET /v1/transactions (Authorization: Bearer token)
+    Safefy-->>App: Dados da transacao
+```
 
-## Body
-
-| Campo | Tipo | Obrigatório | Descrição |
-|------|------|-------------|-----------|
-| `grantType` | string | sim | Sempre `client_credentials` |
-| `publicKey` | string | sim | Chave pública da credencial |
-| `secretKey` | string | sim | Chave secreta da credencial |
-
-## Resposta
-
-| Campo | Tipo | Descrição |
-|------|------|-----------|
-| `data.accessToken` | string | Token JWT para autenticação |
-| `data.tokenType` | string | Sempre `Bearer` |
-| `data.expiresIn` | int | Tempo de expiração em segundos |
-| `data.environment` | string | `Sandbox` ou `Production` |
-
-## Exemplo de requisição
+## Obtendo o token
 
 ```bash
-curl -X POST https://api.safefypay.com.br/v1/auth/token \
+curl -X POST https://api-payment.safefypay.com.br/v1/auth/token \
   -H "Content-Type: application/json" \
   -d '{
     "grantType": "client_credentials",
-    "publicKey": "pub_...",
-    "secretKey": "sec_..."
+    "publicKey": "pk_sandbox_abc123...",
+    "secretKey": "sk_sandbox_xyz789..."
   }'
 ```
 
-## Exemplo de resposta
+**Resposta:**
 
 ```json
 {
   "data": {
-    "accessToken": "<jwt>",
+    "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
     "tokenType": "Bearer",
     "expiresIn": 3600,
     "environment": "Sandbox"
@@ -51,18 +43,48 @@ curl -X POST https://api.safefypay.com.br/v1/auth/token \
 }
 ```
 
-## Uso do token
+## Usando o token
 
-Envie o token em todas as requisições protegidas:
+Inclua o token no header `Authorization` de todas as requisicoes:
 
+```bash
+curl https://api-payment.safefypay.com.br/v1/transactions \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
 ```
-Authorization: Bearer <token>
-```
 
-## Rate limit
+<Warning>
+O token expira em **1 hora** (3600 segundos). Renove-o antes da expiracao para evitar interrupcoes.
+</Warning>
 
-A geração de tokens é limitada por credencial. Se o limite for atingido, a API retorna **429** com o header `Retry-After`.
+---
 
-## Restrições de IP
+## Boas praticas de seguranca
 
-Se sua credencial tiver IPs permitidos configurados, a API retornará **403** quando a origem não estiver autorizada.
+<CardGroup cols={2}>
+  <Card title="Nunca exponha a secretKey" icon="shield">
+    Mantenha a secretKey apenas no backend. Nunca a inclua em codigo frontend ou repositorios publicos.
+  </Card>
+  <Card title="Use variaveis de ambiente" icon="lock">
+    Armazene suas credenciais em variaveis de ambiente ou servicos de secrets (AWS Secrets Manager, Vault, etc).
+  </Card>
+  <Card title="Renove antes de expirar" icon="rotate">
+    Implemente logica para renovar o token antes dos 3600 segundos expirarem.
+  </Card>
+  <Card title="Configure IPs permitidos" icon="network-wired">
+    No painel Safefy, restrinja o uso das credenciais apenas aos IPs do seu servidor.
+  </Card>
+</CardGroup>
+
+---
+
+## Erros comuns
+
+| Codigo | Erro | Solucao |
+|--------|------|---------|
+| 401 | Credenciais invalidas | Verifique publicKey e secretKey |
+| 403 | IP nao autorizado | Adicione o IP nas configuracoes da credencial |
+| 429 | Rate limit excedido | Aguarde o tempo indicado em Retry-After |
+
+<Card title="Testar autenticacao" icon="play" href="/api-reference/auth/token">
+  Experimente o endpoint de autenticacao no playground.
+</Card>

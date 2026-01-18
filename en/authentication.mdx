@@ -1,0 +1,90 @@
+---
+title: "Authentication"
+description: "How to authenticate your requests in the Safefy API"
+---
+
+Safefy uses **OAuth2 Client Credentials** for authentication. You must obtain a JWT token before making any other request.
+
+## How it works
+
+```mermaid
+sequenceDiagram
+    participant App as Your Application
+    participant Safefy as Safefy API
+    
+    App->>Safefy: POST /v1/auth/token (credentials)
+    Safefy-->>App: JWT token (expires in 1h)
+    App->>Safefy: GET /v1/transactions (Authorization: Bearer token)
+    Safefy-->>App: Transaction data
+```
+
+## Getting the token
+
+```bash
+curl -X POST https://api-payment.safefypay.com.br/v1/auth/token \
+  -H "Content-Type: application/json" \
+  -d '{
+    "grantType": "client_credentials",
+    "publicKey": "pk_sandbox_abc123...",
+    "secretKey": "sk_sandbox_xyz789..."
+  }'
+```
+
+**Response:**
+
+```json
+{
+  "data": {
+    "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+    "tokenType": "Bearer",
+    "expiresIn": 3600,
+    "environment": "Sandbox"
+  }
+}
+```
+
+## Using the token
+
+Include the token in the `Authorization` header for all requests:
+
+```bash
+curl https://api-payment.safefypay.com.br/v1/transactions \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+```
+
+<Warning>
+The token expires in **1 hour** (3600 seconds). Refresh it before expiration to avoid interruptions.
+</Warning>
+
+---
+
+## Security best practices
+
+<CardGroup cols={2}>
+  <Card title="Never expose the secretKey" icon="shield">
+    Keep the secretKey only on the backend. Never include it in frontend code or public repositories.
+  </Card>
+  <Card title="Use environment variables" icon="lock">
+    Store credentials in environment variables or secret managers (AWS Secrets Manager, Vault, etc).
+  </Card>
+  <Card title="Refresh before expiration" icon="rotate">
+    Implement logic to refresh the token before the 3600 seconds expire.
+  </Card>
+  <Card title="Restrict allowed IPs" icon="network-wired">
+    In the Safefy dashboard, restrict credential usage to your server IPs.
+  </Card>
+</CardGroup>
+
+---
+
+## Common errors
+
+| Code | Error | Solution |
+|------|-------|----------|
+| 401 | Invalid credentials | Check publicKey and secretKey |
+| 403 | Unauthorized IP | Add the IP in the credential settings |
+| 429 | Rate limit exceeded | Wait for the time indicated in Retry-After |
+
+<Card title="Test authentication" icon="play" href="/api-reference/auth/token">
+  Try the authentication endpoint in the playground.
+</Card>

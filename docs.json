@@ -1,121 +1,213 @@
 {
-  "$schema": "https://mintlify.com/docs.json",
-  "theme": "mint",
-  "name": "Safefy Pay",
-  "colors": {
-    "primary": "#10B981",
-    "light": "#34D399",
-    "dark": "#059669"
-  },
-  "favicon": "/favicon.svg",
-  "navigation": {
-    "tabs": [
-      {
-        "tab": "Guia",
-        "groups": [
-          {
-            "group": "Visão geral",
-            "pages": [
-              "index",
-              "quickstart"
-            ]
-          },
-          {
-            "group": "Autenticação",
-            "pages": [
-              "authentication"
-            ]
-          },
-          {
-            "group": "Recursos principais",
-            "pages": [
-              "customers",
-              "transactions",
-              "balance",
-              "cashouts",
-              "webhooks",
-              "sandbox"
-            ]
-          },
-          {
-            "group": "Padrões",
-            "pages": [
-              "errors"
-            ]
-          }
-        ]
-      },
-      {
-        "tab": "API Reference",
-        "groups": [
-          {
-            "group": "Safefy API",
-            "pages": [
-              "api-reference/introduction",
-              "api-reference/reference"
-            ]
-          }
-        ]
-      }
-    ],
-    "global": {
-      "anchors": [
-        {
-          "anchor": "Status",
-          "href": "https://status.safefypay.com.br",
-          "icon": "signal"
-        },
-        {
-          "anchor": "Suporte",
-          "href": "mailto:suporte@safefypay.com.br",
-          "icon": "life-ring"
-        }
-      ]
-    }
-  },
-  "logo": {
-    "light": "/logo/light.svg",
-    "dark": "/logo/dark.svg"
-  },
-  "navbar": {
-    "links": [
-      {
-        "label": "Suporte",
-        "href": "mailto:suporte@safefypay.com.br"
-      }
-    ],
-    "primary": {
-      "type": "button",
-      "label": "Portal Safefy",
-      "href": "https://safefypay.com.br"
-    }
-  },
-  "api": {
-    "baseUrl": [
-      "http://safefy-api-payment-staging.up.railway.app"
-    ],
-    "auth": {
-      "method": "bearer",
-      "name": "Authorization"
-    },
-    "playground": {
-      "mode": "show"
-    }
-  },
-  "openapi": "/api-reference/openapi.json",
-  "contextual": {
-    "options": [
-     "copy",
-     "view",
-     "chatgpt",
-     "claude",
-     "perplexity",
-     "mcp",
-     "cursor",
-     "vscode"
-   ]
-  },
-  "footer": {
-    "socials": {}
-  }
+	"$schema": "https://mintlify.com/docs.json",
+	"theme": "mint",
+	"name": "Safefy Pay",
+	"colors": {
+		"primary": "#3b82f6",
+		"light": "#60a5fa",
+		"dark": "#2563eb"
+	},
+	"background": {
+		"color": {
+			"light": "#f9f9f9",
+			"dark": "#161616"
+		}
+	},
+	"favicon": "/favicon.ico",
+	"navigation": {
+		"languages": [
+			{
+				"language": "pt-BR",
+				"tabs": [
+					{
+						"tab": "Documentação",
+						"groups": [
+							{
+								"group": "Introdução",
+								"pages": ["index", "quickstart"]
+							},
+							{
+								"group": "Conceitos",
+								"pages": ["authentication", "webhooks", "errors"]
+							},
+							
+							{
+								"group": "Ambiente de testes",
+								"pages": ["sandbox"]
+							}
+						]
+					},
+					{
+						"tab": "API",
+						"groups": [
+							{
+								"group": "Autenticação",
+								"pages": ["api-reference/auth/token"]
+							},
+							{
+								"group": "Clientes",
+								"pages": [
+									"api-reference/customers/index",
+									"api-reference/customers/create",
+									"api-reference/customers/list",
+									"api-reference/customers/get",
+									"api-reference/customers/update"
+								]
+							},
+							{
+								"group": "Transações",
+								"pages": [
+									"api-reference/transactions/index",
+									"api-reference/transactions/create",
+									"api-reference/transactions/list",
+									"api-reference/transactions/get",
+									"api-reference/transactions/simulate"
+								]
+							},
+							{
+								"group": "Saldo",
+								"pages": ["api-reference/balance/index", "api-reference/balance/get"]
+							},
+							{
+								"group": "Saques",
+								"pages": [
+									"api-reference/cashouts/index",
+									"api-reference/cashouts/create",
+									"api-reference/cashouts/list",
+									"api-reference/cashouts/get",
+									"api-reference/cashouts/cancel",
+									"api-reference/cashouts/simulate"
+								]
+							}
+						]
+					}
+				]
+			},
+			{
+				"language": "en",
+				"tabs": [
+					{
+						"tab": "Documentation",
+						"groups": [
+							{
+								"group": "Introduction",
+								"pages": ["en/index", "en/quickstart"]
+							},
+							{
+								"group": "Concepts",
+								"pages": ["en/authentication", "en/webhooks", "en/errors"]
+							},
+							{
+								"group": "API Status",
+								"pages": ["en/status"]
+							},
+							{
+								"group": "Testing environment",
+								"pages": ["en/sandbox"]
+							}
+						]
+					},
+					{
+						"tab": "API",
+						"groups": [
+							{
+								"group": "Authentication",
+								"pages": ["api-reference/auth/token"]
+							},
+							{
+								"group": "Customers",
+								"pages": [
+									"api-reference/customers/index",
+									"api-reference/customers/create",
+									"api-reference/customers/list",
+									"api-reference/customers/get",
+									"api-reference/customers/update"
+								]
+							},
+							{
+								"group": "Transactions",
+								"pages": [
+									"api-reference/transactions/index",
+									"api-reference/transactions/create",
+									"api-reference/transactions/list",
+									"api-reference/transactions/get",
+									"api-reference/transactions/simulate"
+								]
+							},
+							{
+								"group": "Balance",
+								"pages": ["api-reference/balance/index", "api-reference/balance/get"]
+							},
+							{
+								"group": "Cashouts",
+								"pages": [
+									"api-reference/cashouts/index",
+									"api-reference/cashouts/create",
+									"api-reference/cashouts/list",
+									"api-reference/cashouts/get",
+									"api-reference/cashouts/cancel",
+									"api-reference/cashouts/simulate"
+								]
+							}
+						]
+					}
+				]
+			}
+		],
+		"global": {
+			"anchors": [
+				{
+					"anchor": "Status",
+					"href": "/status",
+					"icon": "signal"
+				},
+				{
+					"anchor": "Suporte",
+					"href": "mailto:suporte@safefypay.com.br",
+					"icon": "life-ring"
+				}
+			]
+		}
+	},
+	"logo": {
+		"light": "/logo/light.svg",
+		"dark": "/logo/dark.svg"
+	},
+	"navbar": {
+		"links": [
+			{
+				"label": "Suporte",
+				"href": "mailto:suporte@safefypay.com.br"
+			}
+		],
+		"primary": {
+			"type": "button",
+			"label": "Acessar Painel",
+			"href": "https://app.safefypay.com.br"
+		}
+	},
+	"api": {
+		"baseUrl": ["https://api-payment.safefypay.com.br"],
+		"auth": {
+			"method": "bearer",
+			"name": "Authorization"
+		},
+		"playground": {
+			"display": "interactive"
+		},
+		"examples": {
+			"languages": ["curl", "python", "javascript", "go", "java"],
+			"defaults": "required",
+			"prefill": true
+		}
+	},
+	"openapi": "/api-reference/openapi.json",
+	"contextual": {
+		"options": ["copy", "view", "chatgpt", "claude", "perplexity", "mcp", "cursor", "vscode"]
+	},
+	"footer": {
+		"socials": {
+			"instagram": "https://www.instagram.com/safefy_pay/"
+		}
+	}
 }

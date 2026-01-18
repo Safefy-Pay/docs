@@ -1,0 +1,151 @@
+---
+title: "Objeto Saque"
+description: "Estrutura e atributos do objeto Saque na API Safefy"
+---
+
+O objeto Saque (Cashout ou Payout) representa uma transferencia de fundos da sua conta Safefy para uma conta bancaria externa via PIX. Os saques sao processados utilizando chaves PIX.
+
+## Estrutura
+
+```json
+{
+  "id": "550e8400-e29b-41d4-a716-446655440000",
+  "externalId": "saque_001",
+  "amount": 50000,
+  "fee": 100,
+  "netAmount": 49900,
+  "currency": "BRL",
+  "status": "Completed",
+  "environment": "Production",
+  "pix": {
+    "pixKeyType": "CPF",
+    "pixKey": "12345678901",
+    "endToEndId": "E12345678202401151234567890123456"
+  },
+  "requestedAt": "2024-01-15T10:30:00Z",
+  "processedAt": "2024-01-15T10:31:00Z",
+  "completedAt": "2024-01-15T10:31:30Z",
+  "failureReason": null,
+  "createdAt": "2024-01-15T10:30:00Z"
+}
+```
+
+## Atributos
+
+<ParamField body="id" type="string" required>
+  Identificador unico do saque no formato UUID v4. Gerado automaticamente pela API.
+</ParamField>
+
+<ParamField body="externalId" type="string">
+  Identificador externo do saque no seu sistema. Util para vincular o saque da Safefy com registros do seu banco de dados.
+</ParamField>
+
+<ParamField body="amount" type="integer" required>
+  Valor bruto do saque em centavos. Por exemplo, R$ 500,00 = `50000`.
+</ParamField>
+
+<ParamField body="fee" type="integer" required>
+  Taxa cobrada pelo saque em centavos.
+</ParamField>
+
+<ParamField body="netAmount" type="integer" required>
+  Valor liquido transferido para a conta de destino em centavos. Calculado como `amount - fee`.
+</ParamField>
+
+<ParamField body="currency" type="string" required>
+  Moeda do saque. Atualmente apenas `BRL` (Real Brasileiro) e suportado.
+</ParamField>
+
+<ParamField body="status" type="string" required>
+  Status atual do saque. Valores possiveis:
+  - `Pending` - Saque solicitado, aguardando processamento
+  - `Processing` - Saque sendo processado
+  - `Completed` - Saque concluido com sucesso
+  - `Failed` - Falha no processamento do saque
+  - `Rejected` - Saque rejeitado (dados invalidos, etc)
+  - `Cancelled` - Saque cancelado pelo usuario
+</ParamField>
+
+<ParamField body="environment" type="string" required>
+  Ambiente do saque:
+  - `Sandbox` - Ambiente de testes
+  - `Production` - Ambiente de producao
+</ParamField>
+
+<ParamField body="pix" type="object" required>
+  Dados da transferencia PIX.
+  
+  <Expandable title="Atributos do PIX">
+    <ParamField body="pix.pixKeyType" type="string" required>
+      Tipo da chave PIX. Valores possiveis:
+      - `CPF` - CPF do destinatario
+      - `CNPJ` - CNPJ do destinatario
+      - `Email` - Email cadastrado como chave PIX
+      - `Phone` - Telefone cadastrado como chave PIX
+      - `Random` - Chave aleatoria
+    </ParamField>
+    <ParamField body="pix.pixKey" type="string" required>
+      Valor da chave PIX do destinatario.
+    </ParamField>
+    <ParamField body="pix.endToEndId" type="string">
+      Identificador fim-a-fim da transacao PIX no Banco Central. Preenchido apos o processamento.
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+<ParamField body="requestedAt" type="string" required>
+  Data e hora em que o saque foi solicitado no formato ISO 8601.
+</ParamField>
+
+<ParamField body="processedAt" type="string">
+  Data e hora em que o saque comecou a ser processado no formato ISO 8601.
+</ParamField>
+
+<ParamField body="completedAt" type="string">
+  Data e hora em que o saque foi concluido no formato ISO 8601.
+</ParamField>
+
+<ParamField body="failureReason" type="string">
+  Motivo da falha ou rejeicao do saque. Preenchido apenas quando `status` e `Failed` ou `Rejected`.
+</ParamField>
+
+<ParamField body="createdAt" type="string" required>
+  Data e hora de criacao do registro no formato ISO 8601.
+</ParamField>
+
+## Ciclo de Vida do Saque
+
+```
+Pending → Processing → Completed
+    ↓         ↓
+Cancelled  Failed
+              ↓
+          Rejected
+```
+
+1. **Pending**: Saque solicitado, aguardando processamento
+2. **Processing**: Saque em andamento
+3. **Completed**: Transferencia concluida com sucesso
+4. **Cancelled**: Cancelado antes de iniciar o processamento
+5. **Failed**: Falha durante o processamento
+6. **Rejected**: Rejeitado (chave PIX invalida, conta inexistente, etc)
+
+## Tipos de Chave PIX
+
+| Tipo | Formato | Exemplo |
+|------|---------|---------|
+| `CPF` | 11 digitos numericos | `12345678901` |
+| `CNPJ` | 14 digitos numericos | `12345678000199` |
+| `Email` | Email valido | `exemplo@email.com` |
+| `Phone` | +55 + DDD + numero | `+5511999999999` |
+| `Random` | 32 caracteres alfanumericos | `a1b2c3d4-e5f6-g7h8-i9j0-k1l2m3n4o5p6` |
+
+## Endpoints
+
+| Metodo | Endpoint | Descricao |
+|--------|----------|-----------|
+| `POST` | `/v1/cashouts` | [Criar saque](/api-reference/cashouts/create) |
+| `GET` | `/v1/cashouts` | [Listar saques](/api-reference/cashouts/list) |
+| `GET` | `/v1/cashouts/{id}` | [Buscar saque](/api-reference/cashouts/get) |
+| `POST` | `/v1/cashouts/{id}/cancel` | [Cancelar saque](/api-reference/cashouts/cancel) |
+| `POST` | `/v1/cashouts/simulate` | [Simular saque (Sandbox)](/api-reference/cashouts/simulate) |

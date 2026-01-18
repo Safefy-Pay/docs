@@ -1,0 +1,119 @@
+---
+title: "Objeto Cliente"
+description: "Estrutura e atributos do objeto Cliente na API Safefy"
+---
+
+O objeto Cliente representa um comprador ou pagador em sua aplicacao. Clientes podem ser associados a transacoes para facilitar o acompanhamento de pagamentos e historico de compras.
+
+## Estrutura
+
+```json
+{
+  "id": "550e8400-e29b-41d4-a716-446655440000",
+  "externalId": "cliente_123",
+  "name": "Maria Silva",
+  "email": "maria@exemplo.com",
+  "document": "12345678901",
+  "documentType": "CPF",
+  "phone": "+5511999999999",
+  "status": "Active",
+  "metadata": "{\"plano\": \"premium\"}",
+  "address": {
+    "street": "Rua das Flores",
+    "number": "123",
+    "complement": "Apto 45",
+    "neighborhood": "Centro",
+    "city": "Sao Paulo",
+    "state": "SP",
+    "postalCode": "01234567",
+    "country": "BR"
+  },
+  "createdAt": "2024-01-15T10:30:00Z"
+}
+```
+
+## Atributos
+
+<ParamField body="id" type="string" required>
+  Identificador unico do cliente no formato UUID v4. Gerado automaticamente pela API.
+</ParamField>
+
+<ParamField body="externalId" type="string">
+  Identificador externo do cliente no seu sistema. Util para vincular o cliente da Safefy com registros do seu banco de dados.
+</ParamField>
+
+<ParamField body="name" type="string" required>
+  Nome completo do cliente.
+</ParamField>
+
+<ParamField body="email" type="string" required>
+  Endereco de email do cliente. Deve ser um email valido.
+</ParamField>
+
+<ParamField body="document" type="string">
+  Numero do documento do cliente (CPF ou CNPJ) sem formatacao, apenas numeros.
+</ParamField>
+
+<ParamField body="documentType" type="string">
+  Tipo do documento do cliente. Valores possiveis:
+  - `CPF` - Cadastro de Pessoa Fisica
+  - `CNPJ` - Cadastro Nacional de Pessoa Juridica
+</ParamField>
+
+<ParamField body="phone" type="string">
+  Numero de telefone do cliente no formato internacional (ex: +5511999999999).
+</ParamField>
+
+<ParamField body="status" type="string" required>
+  Status atual do cliente. Valores possiveis:
+  - `Active` - Cliente ativo e pode realizar transacoes
+  - `Inactive` - Cliente inativo
+</ParamField>
+
+<ParamField body="metadata" type="string">
+  Campo livre para armazenar informacoes adicionais em formato JSON string. Maximo de 1000 caracteres.
+</ParamField>
+
+<ParamField body="address" type="object">
+  Objeto contendo o endereco do cliente.
+
+  <Expandable title="Atributos do endereco">
+    <ParamField body="address.street" type="string">
+      Nome da rua ou avenida.
+    </ParamField>
+    <ParamField body="address.number" type="string">
+      Numero do endereco.
+    </ParamField>
+    <ParamField body="address.complement" type="string">
+      Complemento do endereco (apartamento, sala, etc).
+    </ParamField>
+    <ParamField body="address.neighborhood" type="string">
+      Bairro.
+    </ParamField>
+    <ParamField body="address.city" type="string">
+      Cidade.
+    </ParamField>
+    <ParamField body="address.state" type="string">
+      Estado (sigla de 2 letras).
+    </ParamField>
+    <ParamField body="address.postalCode" type="string">
+      CEP sem formatacao, apenas numeros.
+    </ParamField>
+    <ParamField body="address.country" type="string">
+      Codigo do pais (ex: BR).
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+<ParamField body="createdAt" type="string" required>
+  Data e hora de criacao do cliente no formato ISO 8601.
+</ParamField>
+
+## Endpoints
+
+| Metodo | Endpoint | Descricao |
+|--------|----------|-----------|
+| `POST` | `/v1/customers` | [Criar cliente](/api-reference/customers/create) |
+| `GET` | `/v1/customers` | [Listar clientes](/api-reference/customers/list) |
+| `GET` | `/v1/customers/{id}` | [Buscar cliente](/api-reference/customers/get) |
+| `PATCH` | `/v1/customers/{id}` | [Atualizar cliente](/api-reference/customers/update) |

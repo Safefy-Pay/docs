@@ -1,0 +1,25 @@
+---
+title: "Gerar token"
+description: "Autenticacao OAuth2 - Client Credentials"
+openapi: "/api-reference/openapi.json POST /v1/auth/token"
+---
+
+Use este endpoint para obter o `accessToken` JWT e autenticar as demais requisicoes.
+
+## Parametros
+
+<ParamField body="grantType" type="string" required>
+  Tipo de autenticacao. Deve ser `client_credentials`.
+</ParamField>
+
+<ParamField body="publicKey" type="string" required>
+  Sua chave publica. Comeca com `pk_sandbox_` ou `pk_production_`.
+</ParamField>
+
+<ParamField body="secretKey" type="string" required>
+  Sua chave secreta. Comeca com `sk_sandbox_` ou `sk_production_`.
+</ParamField>
+
+<Note>
+O ambiente retornado (`Sandbox` ou `Production`) e determinado automaticamente pelas credenciais utilizadas.
+</Note>

@@ -1,52 +1,110 @@
 ---
-title: "Quickstart"
+title: "Primeiros passos"
 description: "Integre a Safefy em poucos minutos"
 ---
 
-## Comece em 4 passos
+## Sua primeira cobranca PIX
+
+Siga este guia para criar sua primeira cobranca PIX em poucos minutos.
 
 <Steps>
-  <Step title="Crie credenciais">
-    No painel Safefy, crie uma credencial de API para o ambiente desejado.
+  <Step title="Obtenha suas credenciais">
+    Acesse o [Painel Safefy](https://app.safefypay.com.br) e crie uma credencial de API.
+    
+    Voce recebera:
+    - `clientId` - Identificador publico da sua aplicacao
+    - `clientSecret` - Chave secreta (exibida apenas uma vez, mantenha em seguranca!)
   </Step>
-  <Step title="Gere o access token">
-    Faça uma requisição para `/v1/auth/token` com `grantType`, `publicKey` e `secretKey`.
+  
+  <Step title="Gere um token de acesso">
+    Com suas credenciais, solicite um token JWT:
+
+    ```bash
+    curl -X POST https://api-payment.safefypay.com.br/v1/auth/token \
+      -H "Content-Type: application/json" \
+      -d '{
+        "grantType": "client_credentials",
+        "clientId": "pk_sandbox_seu_client_id",
+        "clientSecret": "sk_sandbox_seu_client_secret"
+      }'
+    ```
+
+    **Resposta:**
+    ```json
+    {
+      "data": {
+        "accessToken": "eyJhbGciOiJIUzI1NiIs...",
+        "tokenType": "Bearer",
+        "expiresIn": 3600
+      }
+    }
+    ```
   </Step>
-  <Step title="Crie a primeira transação">
-    Crie um cliente (opcional) e depois gere uma transação PIX para obter o QR Code.
+  
+  <Step title="Crie uma cobranca PIX">
+    Use o token para criar sua primeira cobranca:
+
+    ```bash
+    curl -X POST https://api-payment.safefypay.com.br/v1/transactions \
+      -H "Authorization: Bearer {seu_token}" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "method": "pix",
+        "amount": 1000,
+        "currency": "BRL",
+        "description": "Minha primeira cobranca",
+        "callbackUrl": "https://seusite.com/webhook"
+      }'
+    ```
+
+    **Resposta:**
+    ```json
+    {
+      "data": {
+        "id": "550e8400-e29b-41d4-a716-446655440000",
+        "status": "Pending",
+        "amount": 1000,
+        "pix": {
+          "qrCode": "data:image/png;base64,...",
+          "copyAndPaste": "00020126580014br.gov.bcb.pix..."
+        }
+      }
+    }
+    ```
   </Step>
-  <Step title="Receba webhooks">
-    Configure a `callbackUrl` para receber atualizações de status em tempo real.
+  
+  <Step title="Receba o pagamento">
+    Quando o pagamento for confirmado, voce recebera um webhook na URL configurada:
+
+    ```json
+    {
+      "event": "transaction.completed",
+      "data": {
+        "id": "550e8400-e29b-41d4-a716-446655440000",
+        "status": "Completed",
+        "amount": 1000,
+        "completedAt": "2024-01-15T10:30:00Z"
+      }
+    }
+    ```
   </Step>
 </Steps>
 
-## Exemplo rápido (token)
+---
 
-```bash
-curl -X POST https://api.safefypay.com.br/v1/auth/token \
-  -H "Content-Type: application/json" \
-  -d '{
-    "grantType": "client_credentials",
-    "publicKey": "pub_...",
-    "secretKey": "sec_..."
-  }'
-```
+## Proximos passos
 
-## Exemplo rápido (criar transação PIX)
-
-```bash
-curl -X POST https://api.safefypay.com.br/v1/transactions \
-  -H "Authorization: Bearer <token>" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "method": "pix",
-    "amount": 15500,
-    "currency": "BRL",
-    "description": "Pedido #456",
-    "callbackUrl": "https://seusite.com/webhooks/safefy"
-  }'
-```
-
-<Tip>
-  Em Sandbox, use a simulação de transações para testar o fluxo completo sem pagamentos reais.
-</Tip>
+<CardGroup cols={2}>
+  <Card title="Autenticacao" icon="key" href="/authentication">
+    Entenda como funciona a autenticacao OAuth2.
+  </Card>
+  <Card title="Webhooks" icon="bell" href="/webhooks">
+    Configure notificacoes em tempo real.
+  </Card>
+  <Card title="Sandbox" icon="flask" href="/sandbox">
+    Teste pagamentos em ambiente de desenvolvimento.
+  </Card>
+  <Card title="Criar transacao" icon="code" href="/api-reference/transactions/create">
+    Veja a referencia completa do endpoint.
+  </Card>
+</CardGroup>

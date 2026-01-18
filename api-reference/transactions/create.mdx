@@ -1,0 +1,95 @@
+---
+title: "Criar transacao"
+description: "Crie uma transacao PIX"
+openapi: "/api-reference/openapi.json POST /v1/transactions"
+---
+
+Cria uma transacao PIX e retorna o codigo **Copia e Cola** para pagamento.
+
+<Info>
+A imagem do QR Code **nao e retornada** pela API. Voce deve gerar a imagem no seu frontend usando uma biblioteca de QR Code a partir do campo `copyAndPaste`.
+</Info>
+
+## Parametros
+
+<ParamField body="amount" type="integer" required>
+  Valor da transacao em centavos. Exemplo: R$ 150,00 = `15000`.
+</ParamField>
+
+<ParamField body="description" type="string">
+  Descricao da transacao. Aparece no extrato do pagador.
+</ParamField>
+
+<ParamField body="externalId" type="string">
+  Identificador externo no seu sistema (ex: ID do pedido). Maximo 100 caracteres.
+</ParamField>
+
+<ParamField body="customerId" type="string">
+  ID do cliente associado a transacao (UUID).
+</ParamField>
+
+<ParamField body="expiresInMinutes" type="integer">
+  Tempo de expiracao em minutos. Padrao: 30 minutos.
+</ParamField>
+
+<ParamField body="callbackUrl" type="string">
+  URL para receber o webhook quando o pagamento for confirmado.
+</ParamField>
+
+<ParamField body="metadata" type="string">
+  Dados adicionais em formato JSON string. Maximo 1000 caracteres.
+</ParamField>
+
+## Gerando o QR Code
+
+O campo `pix.copyAndPaste` contem o codigo EMV (BR Code) do PIX. Para exibir o QR Code visualmente, voce precisa gerar a imagem no seu frontend.
+
+### JavaScript (usando qrcode.js)
+
+```html
+<script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+
+<canvas id="qrcode"></canvas>
+
+<script>
+  const pixCode = "00020126580014br.gov.bcb.pix0136a1b2c3d4...";
+  QRCode.toCanvas(document.getElementById('qrcode'), pixCode);
+</script>
+```
+
+### React (usando react-qr-code)
+
+```jsx
+import QRCode from 'react-qr-code';
+
+function PaymentPage({ transaction }) {
+  return (
+    <div>
+      <QRCode value={transaction.pix.copyAndPaste} size={256} />
+      <p>Ou copie o codigo:</p>
+      <code>{transaction.pix.copyAndPaste}</code>
+    </div>
+  );
+}
+```
+
+### Next.js (usando next-qrcode)
+
+```jsx
+import { useQRCode } from 'next-qrcode';
+
+function PaymentPage({ transaction }) {
+  const { Canvas } = useQRCode();
+  
+  return (
+    <Canvas
+      text={transaction.pix.copyAndPaste}
+      options={{ width: 256, margin: 2 }}
+    />
+  );
+}
+```
+
+<Tip>
+O codigo `copyAndPaste` tambem pode ser copiado pelo usuario e colado diretamente no app do banco para efetuar o pagamento.
+</Tip>

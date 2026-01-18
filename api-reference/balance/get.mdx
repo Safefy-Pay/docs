@@ -1,0 +1,20 @@
+---
+title: "Consultar saldo"
+description: "Consulte o saldo da sua conta"
+openapi: "api-reference/openapi.json GET /v1/balance"
+---
+
+Retorna o saldo atual da sua conta Safefy, incluindo valores disponiveis, pendentes e totais acumulados.
+
+## Entendendo os Valores
+
+| Campo | Descricao |
+|-------|-----------|  
+| `balance.available` | Saldo disponivel para saque |
+| `balance.pending` | Pagamentos aguardando confirmacao |
+| `balance.reserved` | Valores reservados para saques em processamento |
+| `balance.total` | Soma de available + pending + reserved |
+
+<Note>
+Todos os valores monetarios estao em **centavos**. Para converter para reais, divida por 100.
+</Note>

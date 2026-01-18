@@ -1,0 +1,32 @@
+---
+title: "Status da API"
+description: "Acompanhe o status da API de pagamentos em tempo real"
+---
+
+import { StatusWidget } from "/snippets/status-widget.jsx";
+
+<StatusWidget />
+
+## Detalhes
+
+Esta página consulta o endpoint de health check a cada 60 segundos e exibe o histórico recente com um gráfico.
+
+## Endpoint de status
+
+Acesse:
+
+http://localhost:5166/health
+
+## Resposta esperada
+
+Quando o serviço está saudável, o endpoint retorna HTTP 200 com um payload simples indicando que está online.
+
+## Quando usar
+
+- Monitoramento externo de disponibilidade
+- Verificação rápida de incidentes
+- Diagnóstico de ambiente de staging
+
+<Note>
+Em caso de indisponibilidade, o endpoint retorna um status HTTP diferente de 200.
+</Note>

@@ -1,0 +1,171 @@
+---
+title: "Objeto Transacao"
+description: "Estrutura e atributos do objeto Transacao na API Safefy"
+---
+
+O objeto Transacao representa uma cobranca ou pagamento processado pela Safefy. Atualmente, a API suporta transacoes via PIX, que geram um QR Code para pagamento instantaneo.
+
+## Estrutura
+
+```json
+{
+  "id": "550e8400-e29b-41d4-a716-446655440000",
+  "externalId": "pedido_12345",
+  "method": "Pix",
+  "amount": 15000,
+  "fee": 150,
+  "netAmount": 14850,
+  "currency": "BRL",
+  "status": "Pending",
+  "description": "Compra na Loja XYZ",
+  "environment": "Production",
+  "customerId": "550e8400-e29b-41d4-a716-446655440001",
+  "customer": {
+    "id": "550e8400-e29b-41d4-a716-446655440001",
+    "name": "Maria Silva",
+    "email": "maria@exemplo.com",
+    "document": "12345678901"
+  },
+  "pix": {
+    "txId": "safefy550e8400e29b41d4a716446655440000",
+    "qrCode": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAA...",
+    "copyAndPaste": "00020126580014br.gov.bcb.pix...",
+    "expiresAt": "2024-01-15T11:00:00Z"
+  },
+  "expiresAt": "2024-01-15T11:00:00Z",
+  "createdAt": "2024-01-15T10:30:00Z",
+  "completedAt": null
+}
+```
+
+## Atributos
+
+<ParamField body="id" type="string" required>
+  Identificador unico da transacao no formato UUID v4. Gerado automaticamente pela API.
+</ParamField>
+
+<ParamField body="externalId" type="string">
+  Identificador externo da transacao no seu sistema. Util para vincular a transacao da Safefy com pedidos ou registros do seu banco de dados.
+</ParamField>
+
+<ParamField body="method" type="string" required>
+  Metodo de pagamento utilizado. Valores possiveis:
+  - `Pix` - Pagamento instantaneo via PIX
+</ParamField>
+
+<ParamField body="amount" type="integer" required>
+  Valor total da transacao em centavos. Por exemplo, R$ 150,00 = `15000`.
+</ParamField>
+
+<ParamField body="fee" type="integer" required>
+  Taxa cobrada pela Safefy em centavos.
+</ParamField>
+
+<ParamField body="netAmount" type="integer" required>
+  Valor liquido que sera creditado na sua conta em centavos. Calculado como `amount - fee`.
+</ParamField>
+
+<ParamField body="currency" type="string" required>
+  Moeda da transacao. Atualmente apenas `BRL` (Real Brasileiro) e suportado.
+</ParamField>
+
+<ParamField body="status" type="string" required>
+  Status atual da transacao. Valores possiveis:
+  - `Pending` - Aguardando pagamento
+  - `Processing` - Pagamento sendo processado
+  - `Completed` - Pagamento confirmado
+  - `Failed` - Falha no pagamento
+  - `Refunded` - Pagamento estornado
+  - `Expired` - Transacao expirada (nao foi paga no prazo)
+  - `Cancelled` - Transacao cancelada
+</ParamField>
+
+<ParamField body="description" type="string">
+  Descricao da transacao. Aparece no extrato do pagador.
+</ParamField>
+
+<ParamField body="environment" type="string" required>
+  Ambiente da transacao:
+  - `Sandbox` - Ambiente de testes
+  - `Production` - Ambiente de producao
+</ParamField>
+
+<ParamField body="customerId" type="string">
+  ID do cliente associado a transacao.
+</ParamField>
+
+<ParamField body="customer" type="object">
+  Dados resumidos do cliente associado a transacao.
+  
+  <Expandable title="Atributos do cliente">
+    <ParamField body="customer.id" type="string">
+      ID do cliente.
+    </ParamField>
+    <ParamField body="customer.name" type="string">
+      Nome do cliente.
+    </ParamField>
+    <ParamField body="customer.email" type="string">
+      Email do cliente.
+    </ParamField>
+    <ParamField body="customer.document" type="string">
+      Documento do cliente.
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+<ParamField body="pix" type="object">
+  Dados especificos do pagamento PIX. Presente apenas quando `method` e `Pix`.
+  
+  <Expandable title="Atributos do PIX">
+    <ParamField body="pix.txId" type="string">
+      Identificador da transacao PIX no Banco Central.
+    </ParamField>
+    <ParamField body="pix.qrCode" type="string">
+      Imagem do QR Code em formato base64 (data URI).
+    </ParamField>
+    <ParamField body="pix.copyAndPaste" type="string">
+      Codigo PIX Copia e Cola (EMV).
+    </ParamField>
+    <ParamField body="pix.expiresAt" type="string">
+      Data e hora de expiracao do QR Code no formato ISO 8601.
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+<ParamField body="expiresAt" type="string">
+  Data e hora de expiracao da transacao no formato ISO 8601. Apos esse horario, a transacao muda para status `Expired` se nao for paga.
+</ParamField>
+
+<ParamField body="createdAt" type="string" required>
+  Data e hora de criacao da transacao no formato ISO 8601.
+</ParamField>
+
+<ParamField body="completedAt" type="string">
+  Data e hora em que o pagamento foi confirmado no formato ISO 8601. Nulo se ainda nao foi pago.
+</ParamField>
+
+## Ciclo de Vida da Transacao
+
+```
+Pending → Processing → Completed
+    ↓         ↓
+ Expired   Failed
+              ↓
+          Refunded
+```
+
+1. **Pending**: Transacao criada, aguardando pagamento
+2. **Processing**: Pagamento em processamento
+3. **Completed**: Pagamento confirmado com sucesso
+4. **Expired**: Nao foi paga antes do prazo de expiracao
+5. **Failed**: Falha no processamento do pagamento
+6. **Refunded**: Pagamento foi estornado
+
+## Endpoints
+
+| Metodo | Endpoint | Descricao |
+|--------|----------|-----------|
+| `POST` | `/v1/transactions` | [Criar transacao](/api-reference/transactions/create) |
+| `GET` | `/v1/transactions` | [Listar transacoes](/api-reference/transactions/list) |
+| `GET` | `/v1/transactions/{id}` | [Buscar transacao](/api-reference/transactions/get) |
+| `POST` | `/v1/transactions/simulate` | [Simular pagamento (Sandbox)](/api-reference/transactions/simulate) |

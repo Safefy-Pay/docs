@@ -1,0 +1,26 @@
+---
+title: "Simular saque"
+description: "Simule o processamento de um saque no Sandbox"
+openapi: "/api-reference/openapi.json POST /v1/cashouts/{id}/simulate"
+---
+
+Simula o processamento de um saque no ambiente Sandbox. Use para testar fluxos de saque sem dinheiro real.
+
+<Warning>
+Disponivel apenas no ambiente **Sandbox**.
+</Warning>
+
+## Parametros de Path
+
+<ParamField path="id" type="string" required>
+  ID do saque (UUID).
+</ParamField>
+
+## Parametros de Body
+
+<ParamField body="action" type="integer" required>
+  Acao a simular:
+  - `1` - Simula conclusao com sucesso (Completed)
+  - `2` - Simula falha (Failed)
+  - `3` - Simula rejeicao (Rejected)
+</ParamField>

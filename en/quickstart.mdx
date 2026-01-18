@@ -1,0 +1,110 @@
+---
+title: "Quickstart"
+description: "Integrate Safefy in minutes"
+---
+
+## Your first PIX charge
+
+Follow this guide to create your first PIX charge in a few minutes.
+
+<Steps>
+  <Step title="Get your credentials">
+    Open the [Safefy Dashboard](https://app.safefypay.com.br) and create an API credential.
+    
+    You will receive:
+    - `clientId` - Public identifier of your application
+    - `clientSecret` - Secret key (shown only once, keep it safe!)
+  </Step>
+  
+  <Step title="Generate an access token">
+    With your credentials, request a JWT token:
+
+    ```bash
+    curl -X POST https://api-payment.safefypay.com.br/v1/auth/token \
+      -H "Content-Type: application/json" \
+      -d '{
+        "grantType": "client_credentials",
+        "clientId": "pk_sandbox_your_client_id",
+        "clientSecret": "sk_sandbox_your_client_secret"
+      }'
+    ```
+
+    **Response:**
+    ```json
+    {
+      "data": {
+        "accessToken": "eyJhbGciOiJIUzI1NiIs...",
+        "tokenType": "Bearer",
+        "expiresIn": 3600
+      }
+    }
+    ```
+  </Step>
+  
+  <Step title="Create a PIX charge">
+    Use the token to create your first charge:
+
+    ```bash
+    curl -X POST https://api-payment.safefypay.com.br/v1/transactions \
+      -H "Authorization: Bearer {your_token}" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "method": "pix",
+        "amount": 1000,
+        "currency": "BRL",
+        "description": "My first charge",
+        "callbackUrl": "https://yoursite.com/webhook"
+      }'
+    ```
+
+    **Response:**
+    ```json
+    {
+      "data": {
+        "id": "550e8400-e29b-41d4-a716-446655440000",
+        "status": "Pending",
+        "amount": 1000,
+        "pix": {
+          "qrCode": "data:image/png;base64,...",
+          "copyAndPaste": "00020126580014br.gov.bcb.pix..."
+        }
+      }
+    }
+    ```
+  </Step>
+  
+  <Step title="Receive the payment">
+    When the payment is confirmed, you will receive a webhook at the configured URL:
+
+    ```json
+    {
+      "event": "transaction.completed",
+      "data": {
+        "id": "550e8400-e29b-41d4-a716-446655440000",
+        "status": "Completed",
+        "amount": 1000,
+        "completedAt": "2024-01-15T10:30:00Z"
+      }
+    }
+    ```
+  </Step>
+</Steps>
+
+---
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Authentication" icon="key" href="/en/authentication">
+    Learn how OAuth2 authentication works.
+  </Card>
+  <Card title="Webhooks" icon="bell" href="/en/webhooks">
+    Configure real-time notifications.
+  </Card>
+  <Card title="Sandbox" icon="flask" href="/en/sandbox">
+    Test payments in a development environment.
+  </Card>
+  <Card title="Create transaction" icon="code" href="/api-reference/transactions/create">
+    See the full endpoint reference.
+  </Card>
+</CardGroup>

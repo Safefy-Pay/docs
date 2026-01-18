@@ -1,16 +1,18 @@
 {
-  "openapi": "3.1.0",
+  "openapi": "3.1.1",
   "info": {
-    "title": "OpenAPI Plant Store",
-    "description": "A sample API that uses a plant store as an example to demonstrate features in the OpenAPI specification",
-    "license": {
-      "name": "MIT"
+    "title": "Safefy - Pix Gateway",
+    "description": "\n## Introducao\n\n**Seu parceiro financeiro de confianca.**\n\nNos somos a Safefy, uma plataforma especializada em solucoes de pagamento PIX. Com um servico personalizado e focado nas suas necessidades, estamos prontos para apoiar sua empresa em cada etapa do processo.\n\n- Conte com o **PIX** como metodo de pagamento rapido, seguro e alinhado com as melhores praticas de conformidade e prevencao a fraudes.\n- Gerencie suas financas de forma simples e acessivel por meio de uma interface completa e intuitiva.\n- Nosso time de suporte esta sempre disponivel para oferecer um atendimento exclusivo e eficiente.\n\n## Precisa de Ajuda?\n\nA equipe da Safefy quer garantir que sua integracao seja um sucesso. Se tiver duvidas ou precisar de suporte, nao hesite em nos contatar:\n\n**suporte@safefypay.com.br**\n\n---\n\n## Valores Monetarios\n\nTodos os valores monetarios sao representados em **centavos** (menor unidade da moeda).\n\n| Valor Real | Valor na API |\n|------------|--------------|\n| R$ 1,00    | 100          |\n| R$ 10,50   | 1050         |\n| R$ 100,00  | 10000        |\n",
+    "contact": {
+      "name": "Suporte Safefy",
+      "email": "suporte@safefypay.com.br"
     },
-    "version": "1.0.0"
+    "version": "v1"
   },
   "servers": [
     {
-      "url": "http://sandbox.mintlify.com"
+      "url": "https://api-payment.safefypay.com.br",
+      "description": "API de Pagamentos Safefy"
     }
   ],
   "security": [
@@ -19,76 +21,99 @@
     }
   ],
   "paths": {
-    "/plants": {
-      "get": {
-        "description": "Returns all plants from the system that the user has access to",
-        "parameters": [
-          {
-            "name": "limit",
-            "in": "query",
-            "description": "The maximum number of results to return",
-            "schema": {
-              "type": "integer",
-              "format": "int32"
+    "/v1/auth/token": {
+      "post": {
+        "tags": ["Autenticacao"],
+        "summary": "Obter token de acesso",
+        "description": "Autentica sua aplicacao usando as credenciais de API e retorna um access token JWT.",
+        "operationId": "getToken",
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TokenRequest"
+              },
+              "example": {
+                "grantType": "client_credentials",
+                "publicKey": "pk_sandbox_abc123def456",
+                "secretKey": "sk_sandbox_xyz789ghi012"
+              }
             }
           }
-        ],
+        },
         "responses": {
           "200": {
-            "description": "Plant response",
+            "description": "Token gerado com sucesso",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/Plant"
+                  "$ref": "#/components/schemas/TokenResponse"
+                },
+                "example": {
+                  "data": {
+                    "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+                    "tokenType": "Bearer",
+                    "expiresIn": 3600,
+                    "environment": "Sandbox"
+                  },
+                  "message": null,
+                  "error": null
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Requisicao invalida",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BaseResponse"
+                },
+                "example": {
+                  "data": null,
+                  "message": null,
+                  "error": {
+                    "message": "O campo publicKey e obrigatorio.",
+                    "code": "validation_error"
                   }
                 }
               }
             }
           },
-          "400": {
-            "description": "Unexpected error",
+          "401": {
+            "description": "Credenciais invalidas",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        }
-      },
-      "post": {
-        "description": "Creates a new plant in the store",
-        "requestBody": {
-          "description": "Plant to add to the store",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/NewPlant"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "plant response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Plant"
+                  "$ref": "#/components/schemas/BaseResponse"
+                },
+                "example": {
+                  "data": null,
+                  "message": null,
+                  "error": {
+                    "message": "Credenciais invalidas ou inativas.",
+                    "code": "invalid_credentials"
+                  }
                 }
               }
             }
           },
-          "400": {
-            "description": "unexpected error",
+          "429": {
+            "description": "Limite de requisicoes excedido",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Error"
+                  "$ref": "#/components/schemas/BaseResponse"
+                },
+                "example": {
+                  "data": null,
+                  "message": null,
+                  "error": {
+                    "message": "Limite de geracao de tokens excedido (10/hora).",
+                    "code": "rate_limit_exceeded"
+                  }
                 }
               }
             }
@@ -96,122 +121,3223 @@
         }
       }
     },
-    "/plants/{id}": {
-      "delete": {
-        "description": "Deletes a single plant based on the ID supplied",
+    "/v1/transactions": {
+      "post": {
+        "tags": ["Transacoes"],
+        "summary": "Criar transacao",
+        "description": "Cria uma nova transacao PIX e retorna o codigo Copia e Cola para pagamento. A imagem do QR Code nao e retornada - utilize uma biblioteca de geracao de QR Code no seu frontend para exibir o codigo visualmente.",
+        "operationId": "createTransaction",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateTransactionRequest"
+              },
+              "example": {
+                "method": "Pix",
+                "amount": 10000,
+                "currency": "BRL",
+                "description": "Pagamento do pedido #12345",
+                "externalId": "pedido_12345",
+                "customerId": "550e8400-e29b-41d4-a716-446655440000",
+                "callbackUrl": "https://seusite.com.br/webhook",
+                "pixExpirationMinutes": 30
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Transacao criada com sucesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateTransactionResponse"
+                },
+                "example": {
+                  "data": {
+                    "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+                    "externalId": "pedido_12345",
+                    "method": "Pix",
+                    "amount": 10000,
+                    "fee": 150,
+                    "netAmount": 9850,
+                    "currency": "BRL",
+                    "status": "Pending",
+                    "description": "Pagamento do pedido #12345",
+                    "environment": "Sandbox",
+                    "expiresAt": "2025-01-15T15:30:00Z",
+                    "createdAt": "2025-01-15T15:00:00Z",
+                    "completedAt": null,
+                    "customerId": "550e8400-e29b-41d4-a716-446655440000",
+                    "pix": {
+                      "txId": "SAFEFY2025011512345678901234",
+                      "copyAndPaste": "00020126580014br.gov.bcb.pix0136a1b2c3d4-e5f6-7890-abcd-ef1234567890...",
+                      "expiresAt": "2025-01-15T15:30:00Z"
+                    },
+                    "card": null,
+                    "boleto": null
+                  },
+                  "message": "Transacao criada com sucesso.",
+                  "error": null
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Dados invalidos",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateTransactionResponse"
+                },
+                "example": {
+                  "data": null,
+                  "message": null,
+                  "error": {
+                    "message": "O valor minimo da transacao e R$ 1,00 (100 centavos).",
+                    "code": "invalid_amount"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Nao autorizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateTransactionResponse"
+                },
+                "example": {
+                  "data": null,
+                  "message": null,
+                  "error": {
+                    "message": "Token invalido ou expirado.",
+                    "code": "unauthorized"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erro interno",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateTransactionResponse"
+                },
+                "example": {
+                  "data": null,
+                  "message": null,
+                  "error": {
+                    "message": "Erro ao processar a transacao. Tente novamente.",
+                    "code": "internal_error"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": ["Transacoes"],
+        "summary": "Listar transacoes",
+        "description": "Retorna uma lista paginada de transacoes com suporte a filtros.",
+        "operationId": "listTransactions",
         "parameters": [
           {
-            "name": "id",
-            "in": "path",
-            "description": "ID of plant to delete",
-            "required": true,
+            "name": "page",
+            "in": "query",
+            "description": "Numero da pagina",
             "schema": {
               "type": "integer",
-              "format": "int64"
+              "default": 1,
+              "example": 1
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "description": "Itens por pagina (max: 100)",
+            "schema": {
+              "type": "integer",
+              "default": 20,
+              "example": 20
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "description": "Filtrar por status",
+            "schema": {
+              "type": "string",
+              "enum": ["Pending", "Completed", "Expired", "Failed", "Refunded"],
+              "example": "Completed"
+            }
+          },
+          {
+            "name": "method",
+            "in": "query",
+            "description": "Filtrar por metodo de pagamento",
+            "schema": {
+              "type": "string",
+              "enum": ["Pix", "CreditCard", "Boleto"],
+              "example": "Pix"
+            }
+          },
+          {
+            "name": "externalId",
+            "in": "query",
+            "description": "Buscar por ID externo",
+            "schema": {
+              "type": "string",
+              "example": "pedido_12345"
+            }
+          },
+          {
+            "name": "customerId",
+            "in": "query",
+            "description": "Filtrar por ID do cliente",
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "example": "550e8400-e29b-41d4-a716-446655440000"
+            }
+          },
+          {
+            "name": "startDate",
+            "in": "query",
+            "description": "Data inicial (ISO 8601)",
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "example": "2025-01-01T00:00:00Z"
+            }
+          },
+          {
+            "name": "endDate",
+            "in": "query",
+            "description": "Data final (ISO 8601)",
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "example": "2025-01-31T23:59:59Z"
             }
           }
         ],
         "responses": {
-          "204": {
-            "description": "Plant deleted",
-            "content": {}
-          },
-          "400": {
-            "description": "unexpected error",
+          "200": {
+            "description": "Lista de transacoes",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Error"
+                  "$ref": "#/components/schemas/ListTransactionsResponse"
+                },
+                "example": {
+                  "data": {
+                    "items": [
+                      {
+                        "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+                        "externalId": "pedido_12345",
+                        "method": "Pix",
+                        "amount": 10000,
+                        "fee": 150,
+                        "netAmount": 9850,
+                        "currency": "BRL",
+                        "status": "Completed",
+                        "description": "Pagamento do pedido #12345",
+                        "environment": "Sandbox",
+                        "expiresAt": "2025-01-15T15:30:00Z",
+                        "completedAt": "2025-01-15T15:10:00Z",
+                        "createdAt": "2025-01-15T15:00:00Z",
+                        "customerId": "550e8400-e29b-41d4-a716-446655440000",
+                        "customer": {
+                          "id": "550e8400-e29b-41d4-a716-446655440000",
+                          "name": "Joao Silva",
+                          "email": "joao@email.com",
+                          "document": "123.456.789-00"
+                        }
+                      }
+                    ],
+                    "page": 1,
+                    "pageSize": 20,
+                    "totalItems": 1,
+                    "totalPages": 1,
+                    "hasNextPage": false,
+                    "hasPreviousPage": false
+                  },
+                  "message": null,
+                  "error": null
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Nao autorizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListTransactionsResponse"
+                },
+                "example": {
+                  "data": null,
+                  "message": null,
+                  "error": {
+                    "message": "Token invalido ou expirado.",
+                    "code": "unauthorized"
+                  }
                 }
               }
             }
           }
         }
       }
-    }
-  },
-  "webhooks": {
-    "/plant/webhook": {
+    },
+    "/v1/transactions/{transactionId}": {
+      "get": {
+        "tags": ["Transacoes"],
+        "summary": "Obter transacao",
+        "description": "Retorna os dados completos de uma transacao especifica.",
+        "operationId": "getTransaction",
+        "parameters": [
+          {
+            "name": "transactionId",
+            "in": "path",
+            "required": true,
+            "description": "ID da transacao",
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "example": "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Dados da transacao",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetTransactionResponse"
+                },
+                "example": {
+                  "data": {
+                    "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+                    "externalId": "pedido_12345",
+                    "method": "Pix",
+                    "amount": 10000,
+                    "fee": 150,
+                    "netAmount": 9850,
+                    "currency": "BRL",
+                    "status": "Completed",
+                    "description": "Pagamento do pedido #12345",
+                    "failureReason": null,
+                    "environment": "Sandbox",
+                    "metadata": "{\"orderId\": 12345}",
+                    "callbackUrl": "https://seusite.com.br/webhook",
+                    "customerId": "550e8400-e29b-41d4-a716-446655440000",
+                    "expiresAt": "2025-01-15T15:30:00Z",
+                    "completedAt": "2025-01-15T15:10:00Z",
+                    "refundedAt": null,
+                    "createdAt": "2025-01-15T15:00:00Z",
+                    "updatedAt": "2025-01-15T15:10:00Z",
+                    "pix": {
+                      "txId": "SAFEFY2025011512345678901234",
+                      "endToEndId": "E12345678202501151510abc123def456",
+                      "qrCode": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAA...",
+                      "copyAndPaste": "00020126580014br.gov.bcb.pix0136a1b2c3d4...",
+                      "payerName": "Joao Silva",
+                      "payerDocument": "***456789**",
+                      "payerBank": "Banco do Brasil",
+                      "expiresAt": "2025-01-15T15:30:00Z"
+                    },
+                    "card": null,
+                    "boleto": null,
+                    "customer": {
+                      "id": "550e8400-e29b-41d4-a716-446655440000",
+                      "name": "Joao Silva",
+                      "email": "joao@email.com",
+                      "document": "123.456.789-00",
+                      "phone": "11999998888"
+                    }
+                  },
+                  "message": null,
+                  "error": null
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Nao autorizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetTransactionResponse"
+                },
+                "example": {
+                  "data": null,
+                  "message": null,
+                  "error": {
+                    "message": "Token invalido ou expirado.",
+                    "code": "unauthorized"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Transacao nao encontrada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetTransactionResponse"
+                },
+                "example": {
+                  "data": null,
+                  "message": null,
+                  "error": {
+                    "message": "Transacao nao encontrada.",
+                    "code": "not_found"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/transactions/{transactionId}/simulate": {
       "post": {
-        "description": "Information about a new plant added to the store",
+        "tags": ["Transacoes"],
+        "summary": "Simular transacao (Sandbox)",
+        "description": "Simula acoes em uma transacao no ambiente Sandbox.",
+        "operationId": "simulateTransaction",
+        "parameters": [
+          {
+            "name": "transactionId",
+            "in": "path",
+            "required": true,
+            "description": "ID da transacao",
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "example": "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+            }
+          }
+        ],
         "requestBody": {
-          "description": "Plant added to the store",
+          "required": true,
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/NewPlant"
+                "$ref": "#/components/schemas/SimulateTransactionRequest"
+              },
+              "example": {
+                "action": "complete"
               }
             }
           }
         },
         "responses": {
           "200": {
-            "description": "Return a 200 status to indicate that the data was received successfully"
+            "description": "Simulacao realizada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SimulateTransactionResponse"
+                },
+                "example": {
+                  "data": {
+                    "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+                    "status": "Completed",
+                    "simulatedAction": "complete",
+                    "completedAt": "2025-01-15T15:10:00Z",
+                    "refundedAt": null,
+                    "pix": {
+                      "txId": "SAFEFY2025011512345678901234",
+                      "qrCode": null,
+                      "copyAndPaste": null,
+                      "expiresAt": null
+                    }
+                  },
+                  "message": "Transacao simulada com sucesso.",
+                  "error": null
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Acao invalida",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SimulateTransactionResponse"
+                },
+                "example": {
+                  "data": null,
+                  "message": null,
+                  "error": {
+                    "message": "A transacao precisa estar com status Pending para simular complete.",
+                    "code": "invalid_status"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Nao autorizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SimulateTransactionResponse"
+                },
+                "example": {
+                  "data": null,
+                  "message": null,
+                  "error": {
+                    "message": "Este endpoint esta disponivel apenas em ambiente Sandbox.",
+                    "code": "sandbox_only"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Transacao nao encontrada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SimulateTransactionResponse"
+                },
+                "example": {
+                  "data": null,
+                  "message": null,
+                  "error": {
+                    "message": "Transacao nao encontrada.",
+                    "code": "not_found"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/customers": {
+      "post": {
+        "tags": ["Clientes"],
+        "summary": "Criar cliente",
+        "description": "Cria um novo cliente associado a sua organizacao.",
+        "operationId": "createCustomer",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateCustomerRequest"
+              },
+              "example": {
+                "name": "Joao Silva",
+                "email": "joao@email.com",
+                "externalId": "cliente_123",
+                "document": "12345678900",
+                "documentType": "CPF",
+                "phone": "11999998888",
+                "metadata": "{\"plano\": \"premium\"}"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Cliente criado com sucesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateCustomerResponse"
+                },
+                "example": {
+                  "data": {
+                    "id": "550e8400-e29b-41d4-a716-446655440000",
+                    "externalId": "cliente_123",
+                    "name": "Joao Silva",
+                    "email": "joao@email.com",
+                    "document": "123.456.789-00",
+                    "documentType": "CPF",
+                    "phone": "11999998888",
+                    "status": "Active",
+                    "metadata": "{\"plano\": \"premium\"}",
+                    "address": null,
+                    "createdAt": "2025-01-15T15:00:00Z"
+                  },
+                  "message": "Cliente criado com sucesso.",
+                  "error": null
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Dados invalidos",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BaseResponse"
+                },
+                "example": {
+                  "data": null,
+                  "message": null,
+                  "error": {
+                    "message": "O campo email e obrigatorio.",
+                    "code": "validation_error"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Nao autorizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BaseResponse"
+                },
+                "example": {
+                  "data": null,
+                  "message": null,
+                  "error": {
+                    "message": "Token invalido ou expirado.",
+                    "code": "unauthorized"
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Cliente ja existe",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BaseResponse"
+                },
+                "example": {
+                  "data": null,
+                  "message": null,
+                  "error": {
+                    "message": "Ja existe um cliente com o externalId informado.",
+                    "code": "conflict"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": ["Clientes"],
+        "summary": "Listar clientes",
+        "description": "Retorna uma lista paginada de clientes com suporte a filtros.",
+        "operationId": "listCustomers",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Numero da pagina",
+            "schema": {
+              "type": "integer",
+              "default": 1,
+              "example": 1
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "description": "Itens por pagina (max: 100)",
+            "schema": {
+              "type": "integer",
+              "default": 20,
+              "example": 20
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "description": "Filtrar por status",
+            "schema": {
+              "type": "string",
+              "enum": ["Active", "Inactive"],
+              "example": "Active"
+            }
+          },
+          {
+            "name": "documentType",
+            "in": "query",
+            "description": "Filtrar por tipo de documento",
+            "schema": {
+              "type": "string",
+              "enum": ["CPF", "CNPJ"],
+              "example": "CPF"
+            }
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "description": "Buscar por nome, email ou documento",
+            "schema": {
+              "type": "string",
+              "example": "joao"
+            }
+          },
+          {
+            "name": "externalId",
+            "in": "query",
+            "description": "Filtrar por ID externo",
+            "schema": {
+              "type": "string",
+              "example": "cliente_123"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista de clientes",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListCustomersResponse"
+                },
+                "example": {
+                  "data": {
+                    "items": [
+                      {
+                        "id": "550e8400-e29b-41d4-a716-446655440000",
+                        "externalId": "cliente_123",
+                        "name": "Joao Silva",
+                        "email": "joao@email.com",
+                        "document": "123.456.789-00",
+                        "documentType": "CPF",
+                        "phone": "11999998888",
+                        "status": "Active",
+                        "metadata": null,
+                        "address": null,
+                        "createdAt": "2025-01-15T15:00:00Z"
+                      }
+                    ],
+                    "page": 1,
+                    "pageSize": 20,
+                    "totalItems": 1,
+                    "totalPages": 1,
+                    "hasNextPage": false,
+                    "hasPreviousPage": false
+                  },
+                  "message": null,
+                  "error": null
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Nao autorizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BaseResponse"
+                },
+                "example": {
+                  "data": null,
+                  "message": null,
+                  "error": {
+                    "message": "Token invalido ou expirado.",
+                    "code": "unauthorized"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/customers/{id}": {
+      "get": {
+        "tags": ["Clientes"],
+        "summary": "Obter cliente",
+        "description": "Retorna os dados completos de um cliente especifico.",
+        "operationId": "getCustomer",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "ID do cliente",
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "example": "550e8400-e29b-41d4-a716-446655440000"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Dados do cliente",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetCustomerResponse"
+                },
+                "example": {
+                  "data": {
+                    "id": "550e8400-e29b-41d4-a716-446655440000",
+                    "externalId": "cliente_123",
+                    "name": "Joao Silva",
+                    "email": "joao@email.com",
+                    "document": "123.456.789-00",
+                    "documentType": "CPF",
+                    "phone": "11999998888",
+                    "status": "Active",
+                    "metadata": null,
+                    "address": {
+                      "street": "Rua das Flores",
+                      "number": "123",
+                      "complement": "Apto 45",
+                      "neighborhood": "Centro",
+                      "city": "Sao Paulo",
+                      "state": "SP",
+                      "postalCode": "01234-567",
+                      "country": "BR"
+                    },
+                    "createdAt": "2025-01-15T15:00:00Z"
+                  },
+                  "message": null,
+                  "error": null
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Nao autorizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BaseResponse"
+                },
+                "example": {
+                  "data": null,
+                  "message": null,
+                  "error": {
+                    "message": "Token invalido ou expirado.",
+                    "code": "unauthorized"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Cliente nao encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BaseResponse"
+                },
+                "example": {
+                  "data": null,
+                  "message": null,
+                  "error": {
+                    "message": "Cliente nao encontrado.",
+                    "code": "not_found"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": ["Clientes"],
+        "summary": "Atualizar cliente",
+        "description": "Atualiza os dados de um cliente existente. Apenas os campos enviados serao atualizados.",
+        "operationId": "updateCustomer",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "ID do cliente",
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "example": "550e8400-e29b-41d4-a716-446655440000"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateCustomerRequest"
+              },
+              "example": {
+                "name": "Joao Silva Santos",
+                "phone": "11999997777"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Cliente atualizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdateCustomerResponse"
+                },
+                "example": {
+                  "data": {
+                    "id": "550e8400-e29b-41d4-a716-446655440000",
+                    "externalId": "cliente_123",
+                    "name": "Joao Silva Santos",
+                    "email": "joao@email.com",
+                    "document": "123.456.789-00",
+                    "documentType": "CPF",
+                    "phone": "11999997777",
+                    "status": "Active",
+                    "metadata": null,
+                    "address": null,
+                    "createdAt": "2025-01-15T15:00:00Z"
+                  },
+                  "message": "Cliente atualizado com sucesso.",
+                  "error": null
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Dados invalidos",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BaseResponse"
+                },
+                "example": {
+                  "data": null,
+                  "message": null,
+                  "error": {
+                    "message": "O email informado e invalido.",
+                    "code": "validation_error"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Nao autorizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BaseResponse"
+                },
+                "example": {
+                  "data": null,
+                  "message": null,
+                  "error": {
+                    "message": "Token invalido ou expirado.",
+                    "code": "unauthorized"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Cliente nao encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BaseResponse"
+                },
+                "example": {
+                  "data": null,
+                  "message": null,
+                  "error": {
+                    "message": "Cliente nao encontrado.",
+                    "code": "not_found"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/balance": {
+      "get": {
+        "tags": ["Saldo"],
+        "summary": "Consultar saldo",
+        "description": "Retorna o saldo atual e volumes de transacoes da sua organizacao.",
+        "operationId": "getBalance",
+        "responses": {
+          "200": {
+            "description": "Dados do saldo",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetBalanceResponse"
+                },
+                "example": {
+                  "data": {
+                    "currency": "BRL",
+                    "balance": {
+                      "available": 150000,
+                      "pending": 25000,
+                      "reserved": 0,
+                      "total": 175000
+                    },
+                    "totals": {
+                      "lifetimeVolume": 5000000,
+                      "lifetimePayouts": 4800000,
+                      "lifetimeRefunds": 50000
+                    },
+                    "period": {
+                      "volumeToday": 100000,
+                      "volumeThisWeek": 500000,
+                      "volumeThisMonth": 2000000
+                    },
+                    "updatedAt": "2025-01-15T15:00:00Z"
+                  },
+                  "message": null,
+                  "error": null
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Nao autorizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetBalanceResponse"
+                },
+                "example": {
+                  "data": null,
+                  "message": null,
+                  "error": {
+                    "message": "Token invalido ou expirado.",
+                    "code": "unauthorized"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/cashouts": {
+      "post": {
+        "tags": ["Saques"],
+        "summary": "Solicitar saque",
+        "description": "Solicita um novo saque do seu saldo disponivel para a conta PIX cadastrada.",
+        "operationId": "createCashout",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateCashoutRequest"
+              },
+              "example": {
+                "amount": 50000,
+                "externalId": "saque_001",
+                "callbackUrl": "https://seusite.com.br/webhook/cashout"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Saque solicitado com sucesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateCashoutResponse"
+                },
+                "example": {
+                  "data": {
+                    "id": "b2c3d4e5-f6a7-8901-bcde-f23456789012",
+                    "externalId": "saque_001",
+                    "amount": 50000,
+                    "fee": 200,
+                    "netAmount": 49800,
+                    "currency": "BRL",
+                    "status": "Pending",
+                    "environment": "Sandbox",
+                    "pix": {
+                      "pixKeyType": "CPF",
+                      "pixKey": "***456789**",
+                      "endToEndId": null
+                    },
+                    "requestedAt": "2025-01-15T16:00:00Z",
+                    "processedAt": null,
+                    "completedAt": null,
+                    "failureReason": null,
+                    "createdAt": "2025-01-15T16:00:00Z"
+                  },
+                  "message": "Saque solicitado com sucesso.",
+                  "error": null
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Dados invalidos ou saldo insuficiente",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateCashoutResponse"
+                },
+                "example": {
+                  "data": null,
+                  "message": null,
+                  "error": {
+                    "message": "Saldo insuficiente para realizar o saque.",
+                    "code": "insufficient_balance"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Nao autorizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateCashoutResponse"
+                },
+                "example": {
+                  "data": null,
+                  "message": null,
+                  "error": {
+                    "message": "Token invalido ou expirado.",
+                    "code": "unauthorized"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erro interno",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateCashoutResponse"
+                },
+                "example": {
+                  "data": null,
+                  "message": null,
+                  "error": {
+                    "message": "Erro ao processar o saque. Tente novamente.",
+                    "code": "internal_error"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": ["Saques"],
+        "summary": "Listar saques",
+        "description": "Retorna uma lista paginada de saques com suporte a filtros.",
+        "operationId": "listCashouts",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Numero da pagina",
+            "schema": {
+              "type": "integer",
+              "default": 1,
+              "example": 1
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "description": "Itens por pagina (max: 100)",
+            "schema": {
+              "type": "integer",
+              "default": 20,
+              "example": 20
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "description": "Filtrar por status",
+            "schema": {
+              "type": "string",
+              "enum": ["Pending", "Processing", "Completed", "Failed", "Rejected", "Cancelled"],
+              "example": "Completed"
+            }
+          },
+          {
+            "name": "startDate",
+            "in": "query",
+            "description": "Data inicial (ISO 8601)",
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "example": "2025-01-01T00:00:00Z"
+            }
+          },
+          {
+            "name": "endDate",
+            "in": "query",
+            "description": "Data final (ISO 8601)",
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "example": "2025-01-31T23:59:59Z"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista de saques",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListCashoutsResponse"
+                },
+                "example": {
+                  "data": {
+                    "items": [
+                      {
+                        "id": "b2c3d4e5-f6a7-8901-bcde-f23456789012",
+                        "amount": 50000,
+                        "fee": 200,
+                        "netAmount": 49800,
+                        "status": "Completed",
+                        "pixKeyType": "CPF",
+                        "pixKey": "***456789**",
+                        "endToEndId": "E12345678202501151600xyz789abc012",
+                        "failureReason": null,
+                        "requestedAt": "2025-01-15T16:00:00Z",
+                        "completedAt": "2025-01-15T16:05:00Z",
+                        "createdAt": "2025-01-15T16:00:00Z"
+                      }
+                    ],
+                    "page": 1,
+                    "pageSize": 20,
+                    "totalItems": 1,
+                    "totalPages": 1,
+                    "hasNextPage": false,
+                    "hasPreviousPage": false
+                  },
+                  "message": null,
+                  "error": null
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Nao autorizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListCashoutsResponse"
+                },
+                "example": {
+                  "data": null,
+                  "message": null,
+                  "error": {
+                    "message": "Token invalido ou expirado.",
+                    "code": "unauthorized"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/cashouts/{id}": {
+      "get": {
+        "tags": ["Saques"],
+        "summary": "Obter saque",
+        "description": "Retorna os dados completos de um saque especifico.",
+        "operationId": "getCashout",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "ID do saque",
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "example": "b2c3d4e5-f6a7-8901-bcde-f23456789012"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Dados do saque",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetCashoutResponse"
+                },
+                "example": {
+                  "data": {
+                    "id": "b2c3d4e5-f6a7-8901-bcde-f23456789012",
+                    "externalId": "saque_001",
+                    "amount": 50000,
+                    "fee": 200,
+                    "netAmount": 49800,
+                    "currency": "BRL",
+                    "status": "Completed",
+                    "environment": "Sandbox",
+                    "pix": {
+                      "pixKeyType": "CPF",
+                      "pixKey": "***456789**",
+                      "endToEndId": "E12345678202501151600xyz789abc012"
+                    },
+                    "requestedAt": "2025-01-15T16:00:00Z",
+                    "processedAt": "2025-01-15T16:02:00Z",
+                    "completedAt": "2025-01-15T16:05:00Z",
+                    "failureReason": null,
+                    "createdAt": "2025-01-15T16:00:00Z"
+                  },
+                  "message": null,
+                  "error": null
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Nao autorizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetCashoutResponse"
+                },
+                "example": {
+                  "data": null,
+                  "message": null,
+                  "error": {
+                    "message": "Token invalido ou expirado.",
+                    "code": "unauthorized"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Saque nao encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetCashoutResponse"
+                },
+                "example": {
+                  "data": null,
+                  "message": null,
+                  "error": {
+                    "message": "Saque nao encontrado.",
+                    "code": "not_found"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/cashouts/{id}/cancel": {
+      "post": {
+        "tags": ["Saques"],
+        "summary": "Cancelar saque",
+        "description": "Cancela um saque pendente. Apenas saques com status Pending podem ser cancelados.",
+        "operationId": "cancelCashout",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "ID do saque",
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "example": "b2c3d4e5-f6a7-8901-bcde-f23456789012"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Saque cancelado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CancelCashoutResponse"
+                },
+                "example": {
+                  "data": {
+                    "id": "b2c3d4e5-f6a7-8901-bcde-f23456789012",
+                    "status": "Cancelled"
+                  },
+                  "message": "Saque cancelado com sucesso.",
+                  "error": null
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Saque nao pode ser cancelado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CancelCashoutResponse"
+                },
+                "example": {
+                  "data": null,
+                  "message": null,
+                  "error": {
+                    "message": "Apenas saques com status Pending podem ser cancelados.",
+                    "code": "invalid_status"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Nao autorizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CancelCashoutResponse"
+                },
+                "example": {
+                  "data": null,
+                  "message": null,
+                  "error": {
+                    "message": "Token invalido ou expirado.",
+                    "code": "unauthorized"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Saque nao encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CancelCashoutResponse"
+                },
+                "example": {
+                  "data": null,
+                  "message": null,
+                  "error": {
+                    "message": "Saque nao encontrado.",
+                    "code": "not_found"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/cashouts/{id}/simulate": {
+      "post": {
+        "tags": ["Saques"],
+        "summary": "Simular saque (Sandbox)",
+        "description": "Simula o processamento de um saque no ambiente Sandbox.",
+        "operationId": "simulateCashout",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "ID do saque",
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "example": "b2c3d4e5-f6a7-8901-bcde-f23456789012"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SimulateCashoutRequest"
+              },
+              "example": {
+                "action": 1
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Simulacao realizada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SimulateCashoutResponse"
+                },
+                "example": {
+                  "data": {
+                    "id": "b2c3d4e5-f6a7-8901-bcde-f23456789012",
+                    "externalId": "saque_001",
+                    "amount": 50000,
+                    "fee": 200,
+                    "netAmount": 49800,
+                    "currency": "BRL",
+                    "status": "Completed",
+                    "environment": "Sandbox",
+                    "pix": {
+                      "pixKeyType": "CPF",
+                      "pixKey": "***456789**",
+                      "endToEndId": "E12345678202501151600xyz789abc012",
+                      "acquirerTransactionId": "SANDBOX_TXN_001"
+                    },
+                    "requestedAt": "2025-01-15T16:00:00Z",
+                    "processedAt": "2025-01-15T16:02:00Z",
+                    "completedAt": "2025-01-15T16:05:00Z",
+                    "failureReason": null,
+                    "createdAt": "2025-01-15T16:00:00Z"
+                  },
+                  "message": "Saque simulado com sucesso.",
+                  "error": null
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Acao invalida",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SimulateCashoutResponse"
+                },
+                "example": {
+                  "data": null,
+                  "message": null,
+                  "error": {
+                    "message": "O saque precisa estar com status Pending para simular Complete.",
+                    "code": "invalid_status"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Nao autorizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SimulateCashoutResponse"
+                },
+                "example": {
+                  "data": null,
+                  "message": null,
+                  "error": {
+                    "message": "Este endpoint esta disponivel apenas em ambiente Sandbox.",
+                    "code": "sandbox_only"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Saque nao encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SimulateCashoutResponse"
+                },
+                "example": {
+                  "data": null,
+                  "message": null,
+                  "error": {
+                    "message": "Saque nao encontrado.",
+                    "code": "not_found"
+                  }
+                }
+              }
+            }
           }
         }
       }
     }
   },
   "components": {
-    "schemas": {
-      "Plant": {
-        "required": [
-          "name"
-        ],
-        "type": "object",
-        "properties": {
-          "name": {
-            "description": "The name of the plant",
-            "type": "string"
-          },
-          "tag": {
-            "description": "Tag to specify the type",
-            "type": "string"
-          }
-        }
-      },
-      "NewPlant": {
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/Plant"
-          },
-          {
-            "required": [
-              "id"
-            ],
-            "type": "object",
-            "properties": {
-              "id": {
-                "description": "Identification number of the plant",
-                "type": "integer",
-                "format": "int64"
-              }
-            }
-          }
-        ]
-      },
-      "Error": {
-        "required": [
-          "error",
-          "message"
-        ],
-        "type": "object",
-        "properties": {
-          "error": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "message": {
-            "type": "string"
-          }
-        }
-      }
-    },
     "securitySchemes": {
       "bearerAuth": {
         "type": "http",
-        "scheme": "bearer"
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "Token JWT obtido via /v1/auth/token"
+      }
+    },
+    "schemas": {
+      "TokenRequest": {
+        "type": "object",
+        "required": ["publicKey", "secretKey"],
+        "properties": {
+          "grantType": {
+            "type": "string",
+            "default": "client_credentials",
+            "description": "Tipo de autenticacao",
+            "example": "client_credentials"
+          },
+          "publicKey": {
+            "type": "string",
+            "description": "Chave publica da credencial (pk_...)",
+            "example": "pk_sandbox_abc123def456"
+          },
+          "secretKey": {
+            "type": "string",
+            "description": "Chave secreta da credencial (sk_...)",
+            "example": "sk_sandbox_xyz789ghi012"
+          }
+        }
+      },
+      "TokenResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/TokenData"
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "error": {
+            "$ref": "#/components/schemas/ApiErrorResponse"
+          }
+        }
+      },
+      "TokenData": {
+        "type": "object",
+        "properties": {
+          "accessToken": {
+            "type": "string",
+            "description": "Token JWT para autenticacao",
+            "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+          },
+          "tokenType": {
+            "type": "string",
+            "description": "Tipo do token",
+            "example": "Bearer"
+          },
+          "expiresIn": {
+            "type": "integer",
+            "description": "Tempo de expiracao em segundos",
+            "example": 3600
+          },
+          "environment": {
+            "type": "string",
+            "description": "Ambiente da credencial",
+            "enum": ["Sandbox", "Production"],
+            "example": "Sandbox"
+          }
+        }
+      },
+      "BaseResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "nullable": true
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "error": {
+            "$ref": "#/components/schemas/ApiErrorResponse"
+          }
+        }
+      },
+      "ApiErrorResponse": {
+        "type": "object",
+        "nullable": true,
+        "properties": {
+          "message": {
+            "type": "string",
+            "description": "Mensagem de erro",
+            "example": "Token invalido ou expirado."
+          },
+          "code": {
+            "type": "string",
+            "description": "Codigo do erro",
+            "example": "unauthorized"
+          }
+        }
+      },
+      "CreateTransactionRequest": {
+        "type": "object",
+        "required": ["method", "amount", "currency"],
+        "properties": {
+          "method": {
+            "type": "string",
+            "enum": ["Pix", "CreditCard", "Boleto"],
+            "description": "Metodo de pagamento",
+            "example": "Pix"
+          },
+          "amount": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Valor em centavos (min: 100)",
+            "example": 10000
+          },
+          "currency": {
+            "type": "string",
+            "enum": ["BRL"],
+            "description": "Moeda",
+            "example": "BRL"
+          },
+          "description": {
+            "type": "string",
+            "nullable": true,
+            "description": "Descricao da transacao (max: 500)",
+            "example": "Pagamento do pedido #12345"
+          },
+          "externalId": {
+            "type": "string",
+            "nullable": true,
+            "description": "ID externo para referencia (max: 100)",
+            "example": "pedido_12345"
+          },
+          "customerId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true,
+            "description": "ID do cliente cadastrado",
+            "example": "550e8400-e29b-41d4-a716-446655440000"
+          },
+          "callbackUrl": {
+            "type": "string",
+            "nullable": true,
+            "description": "URL para receber webhooks",
+            "example": "https://seusite.com.br/webhook"
+          },
+          "metadata": {
+            "type": "string",
+            "nullable": true,
+            "description": "Metadados em JSON",
+            "example": "{\"orderId\": 12345}"
+          },
+          "pixExpirationMinutes": {
+            "type": "integer",
+            "nullable": true,
+            "description": "Tempo de expiracao do PIX (5-1440 min)",
+            "example": 30
+          },
+          "customerName": {
+            "type": "string",
+            "nullable": true,
+            "description": "Nome do pagador (PIX)",
+            "example": "Joao Silva"
+          },
+          "customerDocument": {
+            "type": "string",
+            "nullable": true,
+            "description": "CPF/CNPJ do pagador (PIX)",
+            "example": "12345678900"
+          }
+        }
+      },
+      "CreateTransactionResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/TransactionData"
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "error": {
+            "$ref": "#/components/schemas/ApiErrorResponse"
+          }
+        }
+      },
+      "TransactionData": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "ID unico da transacao",
+            "example": "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+          },
+          "externalId": {
+            "type": "string",
+            "nullable": true,
+            "description": "ID externo informado",
+            "example": "pedido_12345"
+          },
+          "method": {
+            "type": "string",
+            "enum": ["Pix", "CreditCard", "Boleto"],
+            "description": "Metodo de pagamento",
+            "example": "Pix"
+          },
+          "amount": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Valor em centavos",
+            "example": 10000
+          },
+          "fee": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Taxa cobrada em centavos",
+            "example": 150
+          },
+          "netAmount": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Valor liquido em centavos",
+            "example": 9850
+          },
+          "currency": {
+            "type": "string",
+            "description": "Moeda",
+            "example": "BRL"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["Pending", "Processing", "Completed", "Failed", "Refunded", "Expired", "Cancelled"],
+            "description": "Status da transacao",
+            "example": "Pending"
+          },
+          "description": {
+            "type": "string",
+            "nullable": true,
+            "description": "Descricao",
+            "example": "Pagamento do pedido #12345"
+          },
+          "environment": {
+            "type": "string",
+            "enum": ["Sandbox", "Production"],
+            "description": "Ambiente",
+            "example": "Sandbox"
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "description": "Data de expiracao",
+            "example": "2025-01-15T15:30:00Z"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Data de criacao",
+            "example": "2025-01-15T15:00:00Z"
+          },
+          "completedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "description": "Data de confirmacao",
+            "example": null
+          },
+          "customerId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true,
+            "description": "ID do cliente",
+            "example": "550e8400-e29b-41d4-a716-446655440000"
+          },
+          "pix": {
+            "$ref": "#/components/schemas/PixTransactionData"
+          },
+          "card": {
+            "$ref": "#/components/schemas/CardTransactionData"
+          },
+          "boleto": {
+            "$ref": "#/components/schemas/BoletoTransactionData"
+          }
+        }
+      },
+      "PixTransactionData": {
+        "type": "object",
+        "nullable": true,
+        "description": "Dados do PIX. A imagem do QR Code nao e retornada - use uma biblioteca de QR Code para gerar a imagem a partir do copyAndPaste.",
+        "properties": {
+          "txId": {
+            "type": "string",
+            "description": "ID da transacao PIX (TxId)",
+            "example": "SAFEFY2025011512345678901234"
+          },
+          "copyAndPaste": {
+            "type": "string",
+            "description": "Codigo PIX Copia e Cola (BR Code). Use este codigo para gerar a imagem do QR Code no seu frontend.",
+            "example": "00020126580014br.gov.bcb.pix0136a1b2c3d4-e5f6-7890-abcd-ef1234567890..."
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Data de expiracao do codigo PIX",
+            "example": "2025-01-15T15:30:00Z"
+          }
+        }
+      },
+      "CardTransactionData": {
+        "type": "object",
+        "nullable": true,
+        "properties": {
+          "lastFour": {
+            "type": "string",
+            "description": "Ultimos 4 digitos do cartao",
+            "example": "1234"
+          },
+          "brand": {
+            "type": "string",
+            "description": "Bandeira do cartao",
+            "example": "Visa"
+          },
+          "installments": {
+            "type": "integer",
+            "description": "Numero de parcelas",
+            "example": 1
+          },
+          "authorizationCode": {
+            "type": "string",
+            "description": "Codigo de autorizacao",
+            "example": "ABC123"
+          }
+        }
+      },
+      "BoletoTransactionData": {
+        "type": "object",
+        "nullable": true,
+        "properties": {
+          "barcode": {
+            "type": "string",
+            "description": "Codigo de barras",
+            "example": "23793.38128 60000.000003 00000.000400 1 84340000010000"
+          },
+          "digitableLine": {
+            "type": "string",
+            "description": "Linha digitavel",
+            "example": "23793.38128 60000.000003 00000.000400 1 84340000010000"
+          },
+          "pdfUrl": {
+            "type": "string",
+            "description": "URL do PDF do boleto",
+            "example": "https://api.safefypay.com.br/boleto/123456.pdf"
+          },
+          "dueDate": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Data de vencimento",
+            "example": "2025-01-20T00:00:00Z"
+          }
+        }
+      },
+      "ListTransactionsResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/PaginatedTransactions"
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "error": {
+            "$ref": "#/components/schemas/ApiErrorResponse"
+          }
+        }
+      },
+      "PaginatedTransactions": {
+        "type": "object",
+        "nullable": true,
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TransactionListItem"
+            }
+          },
+          "page": {
+            "type": "integer",
+            "example": 1
+          },
+          "pageSize": {
+            "type": "integer",
+            "example": 20
+          },
+          "totalItems": {
+            "type": "integer",
+            "example": 100
+          },
+          "totalPages": {
+            "type": "integer",
+            "example": 5
+          },
+          "hasNextPage": {
+            "type": "boolean",
+            "example": true
+          },
+          "hasPreviousPage": {
+            "type": "boolean",
+            "example": false
+          }
+        }
+      },
+      "TransactionListItem": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "example": "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+          },
+          "externalId": {
+            "type": "string",
+            "nullable": true,
+            "example": "pedido_12345"
+          },
+          "method": {
+            "type": "string",
+            "example": "Pix"
+          },
+          "amount": {
+            "type": "integer",
+            "example": 10000
+          },
+          "fee": {
+            "type": "integer",
+            "example": 150
+          },
+          "netAmount": {
+            "type": "integer",
+            "example": 9850
+          },
+          "currency": {
+            "type": "string",
+            "example": "BRL"
+          },
+          "status": {
+            "type": "string",
+            "example": "Completed"
+          },
+          "description": {
+            "type": "string",
+            "nullable": true,
+            "example": "Pagamento do pedido #12345"
+          },
+          "environment": {
+            "type": "string",
+            "example": "Sandbox"
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "example": "2025-01-15T15:30:00Z"
+          },
+          "completedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "example": "2025-01-15T15:10:00Z"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2025-01-15T15:00:00Z"
+          },
+          "customerId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true,
+            "example": "550e8400-e29b-41d4-a716-446655440000"
+          },
+          "customer": {
+            "$ref": "#/components/schemas/TransactionCustomer"
+          }
+        }
+      },
+      "TransactionCustomer": {
+        "type": "object",
+        "nullable": true,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "example": "550e8400-e29b-41d4-a716-446655440000"
+          },
+          "name": {
+            "type": "string",
+            "example": "Joao Silva"
+          },
+          "email": {
+            "type": "string",
+            "example": "joao@email.com"
+          },
+          "document": {
+            "type": "string",
+            "nullable": true,
+            "example": "123.456.789-00"
+          }
+        }
+      },
+      "GetTransactionResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/TransactionDetail"
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "error": {
+            "$ref": "#/components/schemas/ApiErrorResponse"
+          }
+        }
+      },
+      "TransactionDetail": {
+        "type": "object",
+        "nullable": true,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "example": "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+          },
+          "externalId": {
+            "type": "string",
+            "nullable": true,
+            "example": "pedido_12345"
+          },
+          "method": {
+            "type": "string",
+            "example": "Pix"
+          },
+          "amount": {
+            "type": "integer",
+            "example": 10000
+          },
+          "fee": {
+            "type": "integer",
+            "example": 150
+          },
+          "netAmount": {
+            "type": "integer",
+            "example": 9850
+          },
+          "currency": {
+            "type": "string",
+            "example": "BRL"
+          },
+          "status": {
+            "type": "string",
+            "example": "Completed"
+          },
+          "description": {
+            "type": "string",
+            "nullable": true,
+            "example": "Pagamento do pedido #12345"
+          },
+          "failureReason": {
+            "type": "string",
+            "nullable": true,
+            "example": null
+          },
+          "environment": {
+            "type": "string",
+            "example": "Sandbox"
+          },
+          "metadata": {
+            "type": "string",
+            "nullable": true,
+            "example": "{\"orderId\": 12345}"
+          },
+          "callbackUrl": {
+            "type": "string",
+            "nullable": true,
+            "example": "https://seusite.com.br/webhook"
+          },
+          "customerId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true,
+            "example": "550e8400-e29b-41d4-a716-446655440000"
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "example": "2025-01-15T15:30:00Z"
+          },
+          "completedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "example": "2025-01-15T15:10:00Z"
+          },
+          "refundedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "example": null
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2025-01-15T15:00:00Z"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "example": "2025-01-15T15:10:00Z"
+          },
+          "pix": {
+            "$ref": "#/components/schemas/PixDetailData"
+          },
+          "card": {
+            "$ref": "#/components/schemas/CardTransactionData"
+          },
+          "boleto": {
+            "$ref": "#/components/schemas/BoletoTransactionData"
+          },
+          "customer": {
+            "$ref": "#/components/schemas/TransactionCustomerDetail"
+          }
+        }
+      },
+      "PixDetailData": {
+        "type": "object",
+        "nullable": true,
+        "description": "Detalhes do PIX. A imagem do QR Code nao e retornada - use uma biblioteca de QR Code para gerar a imagem a partir do copyAndPaste.",
+        "properties": {
+          "txId": {
+            "type": "string",
+            "description": "ID da transacao PIX (TxId)",
+            "example": "SAFEFY2025011512345678901234"
+          },
+          "endToEndId": {
+            "type": "string",
+            "nullable": true,
+            "description": "Identificador unico da transacao PIX no SPI (preenchido apos pagamento)",
+            "example": "E12345678202501151510abc123def456"
+          },
+          "copyAndPaste": {
+            "type": "string",
+            "description": "Codigo PIX Copia e Cola (BR Code). Use este codigo para gerar a imagem do QR Code.",
+            "example": "00020126580014br.gov.bcb.pix0136a1b2c3d4-e5f6-7890-abcd-ef1234567890..."
+          },
+          "payerName": {
+            "type": "string",
+            "nullable": true,
+            "description": "Nome do pagador (preenchido apos pagamento)",
+            "example": "Joao Silva"
+          },
+          "payerDocument": {
+            "type": "string",
+            "nullable": true,
+            "description": "Documento do pagador mascarado (preenchido apos pagamento)",
+            "example": "***456789**"
+          },
+          "payerBank": {
+            "type": "string",
+            "nullable": true,
+            "description": "Banco do pagador (preenchido apos pagamento)",
+            "example": "Banco do Brasil"
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "description": "Data de expiracao do codigo PIX",
+            "example": "2025-01-15T15:30:00Z"
+          }
+        }
+      },
+      "TransactionCustomerDetail": {
+        "type": "object",
+        "nullable": true,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "example": "550e8400-e29b-41d4-a716-446655440000"
+          },
+          "name": {
+            "type": "string",
+            "example": "Joao Silva"
+          },
+          "email": {
+            "type": "string",
+            "example": "joao@email.com"
+          },
+          "document": {
+            "type": "string",
+            "nullable": true,
+            "example": "123.456.789-00"
+          },
+          "phone": {
+            "type": "string",
+            "nullable": true,
+            "example": "11999998888"
+          }
+        }
+      },
+      "SimulateTransactionRequest": {
+        "type": "object",
+        "required": ["action"],
+        "properties": {
+          "action": {
+            "type": "string",
+            "enum": ["complete", "expire", "fail", "refund"],
+            "description": "Acao a simular",
+            "example": "complete"
+          }
+        }
+      },
+      "SimulateTransactionResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/TransactionSimulation"
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "error": {
+            "$ref": "#/components/schemas/ApiErrorResponse"
+          }
+        }
+      },
+      "TransactionSimulation": {
+        "type": "object",
+        "nullable": true,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "example": "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+          },
+          "status": {
+            "type": "string",
+            "example": "Completed"
+          },
+          "simulatedAction": {
+            "type": "string",
+            "example": "complete"
+          },
+          "completedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "example": "2025-01-15T15:10:00Z"
+          },
+          "refundedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "example": null
+          },
+          "pix": {
+            "$ref": "#/components/schemas/PixTransactionData"
+          }
+        }
+      },
+      "CreateCustomerRequest": {
+        "type": "object",
+        "required": ["name", "email"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Nome completo do cliente",
+            "example": "Joao Silva"
+          },
+          "email": {
+            "type": "string",
+            "description": "E-mail do cliente",
+            "example": "joao@email.com"
+          },
+          "externalId": {
+            "type": "string",
+            "nullable": true,
+            "description": "Seu identificador interno",
+            "example": "cliente_123"
+          },
+          "document": {
+            "type": "string",
+            "nullable": true,
+            "description": "CPF ou CNPJ (apenas numeros)",
+            "example": "12345678900"
+          },
+          "documentType": {
+            "type": "string",
+            "enum": ["CPF", "CNPJ"],
+            "nullable": true,
+            "description": "Tipo do documento",
+            "example": "CPF"
+          },
+          "phone": {
+            "type": "string",
+            "nullable": true,
+            "description": "Telefone (apenas numeros)",
+            "example": "11999998888"
+          },
+          "metadata": {
+            "type": "string",
+            "nullable": true,
+            "description": "Metadados em JSON",
+            "example": "{\"plano\": \"premium\"}"
+          }
+        }
+      },
+      "CreateCustomerResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/CustomerData"
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "error": {
+            "$ref": "#/components/schemas/ApiErrorResponse"
+          }
+        }
+      },
+      "CustomerData": {
+        "type": "object",
+        "nullable": true,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "ID unico do cliente",
+            "example": "550e8400-e29b-41d4-a716-446655440000"
+          },
+          "externalId": {
+            "type": "string",
+            "nullable": true,
+            "description": "ID externo informado",
+            "example": "cliente_123"
+          },
+          "name": {
+            "type": "string",
+            "description": "Nome do cliente",
+            "example": "Joao Silva"
+          },
+          "email": {
+            "type": "string",
+            "description": "E-mail do cliente",
+            "example": "joao@email.com"
+          },
+          "document": {
+            "type": "string",
+            "nullable": true,
+            "description": "CPF/CNPJ formatado",
+            "example": "123.456.789-00"
+          },
+          "documentType": {
+            "type": "string",
+            "enum": ["CPF", "CNPJ"],
+            "nullable": true,
+            "description": "Tipo do documento",
+            "example": "CPF"
+          },
+          "phone": {
+            "type": "string",
+            "nullable": true,
+            "description": "Telefone",
+            "example": "11999998888"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["Active", "Inactive"],
+            "description": "Status do cliente",
+            "example": "Active"
+          },
+          "metadata": {
+            "type": "string",
+            "nullable": true,
+            "description": "Metadados",
+            "example": null
+          },
+          "address": {
+            "$ref": "#/components/schemas/CustomerAddress"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Data de criacao",
+            "example": "2025-01-15T15:00:00Z"
+          }
+        }
+      },
+      "CustomerAddress": {
+        "type": "object",
+        "nullable": true,
+        "properties": {
+          "street": {
+            "type": "string",
+            "nullable": true,
+            "example": "Rua das Flores"
+          },
+          "number": {
+            "type": "string",
+            "nullable": true,
+            "example": "123"
+          },
+          "complement": {
+            "type": "string",
+            "nullable": true,
+            "example": "Apto 45"
+          },
+          "neighborhood": {
+            "type": "string",
+            "nullable": true,
+            "example": "Centro"
+          },
+          "city": {
+            "type": "string",
+            "nullable": true,
+            "example": "Sao Paulo"
+          },
+          "state": {
+            "type": "string",
+            "nullable": true,
+            "example": "SP"
+          },
+          "postalCode": {
+            "type": "string",
+            "nullable": true,
+            "example": "01234-567"
+          },
+          "country": {
+            "type": "string",
+            "nullable": true,
+            "example": "BR"
+          }
+        }
+      },
+      "ListCustomersResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/PaginatedCustomers"
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "error": {
+            "$ref": "#/components/schemas/ApiErrorResponse"
+          }
+        }
+      },
+      "PaginatedCustomers": {
+        "type": "object",
+        "nullable": true,
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CustomerData"
+            }
+          },
+          "page": {
+            "type": "integer",
+            "example": 1
+          },
+          "pageSize": {
+            "type": "integer",
+            "example": 20
+          },
+          "totalItems": {
+            "type": "integer",
+            "example": 50
+          },
+          "totalPages": {
+            "type": "integer",
+            "example": 3
+          },
+          "hasNextPage": {
+            "type": "boolean",
+            "example": true
+          },
+          "hasPreviousPage": {
+            "type": "boolean",
+            "example": false
+          }
+        }
+      },
+      "GetCustomerResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/CustomerData"
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "error": {
+            "$ref": "#/components/schemas/ApiErrorResponse"
+          }
+        }
+      },
+      "UpdateCustomerRequest": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "nullable": true,
+            "description": "Nome do cliente",
+            "example": "Joao Silva Santos"
+          },
+          "email": {
+            "type": "string",
+            "nullable": true,
+            "description": "E-mail do cliente",
+            "example": "joao.santos@email.com"
+          },
+          "document": {
+            "type": "string",
+            "nullable": true,
+            "description": "CPF ou CNPJ",
+            "example": "12345678900"
+          },
+          "documentType": {
+            "type": "string",
+            "enum": ["CPF", "CNPJ"],
+            "nullable": true,
+            "description": "Tipo do documento",
+            "example": "CPF"
+          },
+          "phone": {
+            "type": "string",
+            "nullable": true,
+            "description": "Telefone",
+            "example": "11999997777"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["Active", "Inactive"],
+            "nullable": true,
+            "description": "Status do cliente",
+            "example": "Active"
+          },
+          "metadata": {
+            "type": "string",
+            "nullable": true,
+            "description": "Metadados em JSON",
+            "example": null
+          }
+        }
+      },
+      "UpdateCustomerResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/CustomerData"
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "error": {
+            "$ref": "#/components/schemas/ApiErrorResponse"
+          }
+        }
+      },
+      "GetBalanceResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/BalanceData"
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "error": {
+            "$ref": "#/components/schemas/ApiErrorResponse"
+          }
+        }
+      },
+      "BalanceData": {
+        "type": "object",
+        "nullable": true,
+        "properties": {
+          "currency": {
+            "type": "string",
+            "description": "Moeda",
+            "example": "BRL"
+          },
+          "balance": {
+            "$ref": "#/components/schemas/BalanceInfo"
+          },
+          "totals": {
+            "$ref": "#/components/schemas/TotalsInfo"
+          },
+          "period": {
+            "$ref": "#/components/schemas/PeriodInfo"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Ultima atualizacao",
+            "example": "2025-01-15T15:00:00Z"
+          }
+        }
+      },
+      "BalanceInfo": {
+        "type": "object",
+        "properties": {
+          "available": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Saldo disponivel para saque (centavos)",
+            "example": 150000
+          },
+          "pending": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Saldo pendente de liquidacao (centavos)",
+            "example": 25000
+          },
+          "reserved": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Saldo reservado (centavos)",
+            "example": 0
+          },
+          "total": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Saldo total (centavos)",
+            "example": 175000
+          }
+        }
+      },
+      "TotalsInfo": {
+        "type": "object",
+        "properties": {
+          "lifetimeVolume": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Volume total recebido (centavos)",
+            "example": 5000000
+          },
+          "lifetimePayouts": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Total de saques realizados (centavos)",
+            "example": 4800000
+          },
+          "lifetimeRefunds": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Total de estornos (centavos)",
+            "example": 50000
+          }
+        }
+      },
+      "PeriodInfo": {
+        "type": "object",
+        "properties": {
+          "volumeToday": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Volume do dia atual (centavos)",
+            "example": 100000
+          },
+          "volumeThisWeek": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Volume dos ultimos 7 dias (centavos)",
+            "example": 500000
+          },
+          "volumeThisMonth": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Volume dos ultimos 30 dias (centavos)",
+            "example": 2000000
+          }
+        }
+      },
+      "CreateCashoutRequest": {
+        "type": "object",
+        "required": ["amount"],
+        "properties": {
+          "amount": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Valor do saque em centavos",
+            "example": 50000
+          },
+          "payoutAccountId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true,
+            "description": "ID da conta de destino (usa padrao se omitido)",
+            "example": null
+          },
+          "externalId": {
+            "type": "string",
+            "nullable": true,
+            "description": "ID externo para referencia",
+            "example": "saque_001"
+          },
+          "callbackUrl": {
+            "type": "string",
+            "nullable": true,
+            "description": "URL para receber webhooks",
+            "example": "https://seusite.com.br/webhook/cashout"
+          }
+        }
+      },
+      "CreateCashoutResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/CashoutData"
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "error": {
+            "$ref": "#/components/schemas/ApiErrorResponse"
+          }
+        }
+      },
+      "CashoutData": {
+        "type": "object",
+        "nullable": true,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "ID unico do saque",
+            "example": "b2c3d4e5-f6a7-8901-bcde-f23456789012"
+          },
+          "externalId": {
+            "type": "string",
+            "nullable": true,
+            "description": "ID externo informado",
+            "example": "saque_001"
+          },
+          "amount": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Valor solicitado (centavos)",
+            "example": 50000
+          },
+          "fee": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Taxa cobrada (centavos)",
+            "example": 200
+          },
+          "netAmount": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Valor liquido (centavos)",
+            "example": 49800
+          },
+          "currency": {
+            "type": "string",
+            "description": "Moeda",
+            "example": "BRL"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["Pending", "Processing", "Completed", "Failed", "Rejected", "Cancelled"],
+            "description": "Status do saque",
+            "example": "Pending"
+          },
+          "environment": {
+            "type": "string",
+            "enum": ["Sandbox", "Production"],
+            "description": "Ambiente",
+            "example": "Sandbox"
+          },
+          "pix": {
+            "$ref": "#/components/schemas/CashoutPixData"
+          },
+          "requestedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Data da solicitacao",
+            "example": "2025-01-15T16:00:00Z"
+          },
+          "processedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "description": "Data do inicio do processamento",
+            "example": null
+          },
+          "completedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "description": "Data da conclusao",
+            "example": null
+          },
+          "failureReason": {
+            "type": "string",
+            "nullable": true,
+            "description": "Motivo da falha",
+            "example": null
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Data de criacao",
+            "example": "2025-01-15T16:00:00Z"
+          }
+        }
+      },
+      "CashoutPixData": {
+        "type": "object",
+        "properties": {
+          "pixKeyType": {
+            "type": "string",
+            "nullable": true,
+            "description": "Tipo da chave PIX",
+            "example": "CPF"
+          },
+          "pixKey": {
+            "type": "string",
+            "nullable": true,
+            "description": "Chave PIX (mascarada)",
+            "example": "***456789**"
+          },
+          "endToEndId": {
+            "type": "string",
+            "nullable": true,
+            "description": "ID da transacao PIX",
+            "example": null
+          }
+        }
+      },
+      "ListCashoutsResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/PaginatedCashouts"
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "error": {
+            "$ref": "#/components/schemas/ApiErrorResponse"
+          }
+        }
+      },
+      "PaginatedCashouts": {
+        "type": "object",
+        "nullable": true,
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CashoutListItem"
+            }
+          },
+          "page": {
+            "type": "integer",
+            "example": 1
+          },
+          "pageSize": {
+            "type": "integer",
+            "example": 20
+          },
+          "totalItems": {
+            "type": "integer",
+            "example": 10
+          },
+          "totalPages": {
+            "type": "integer",
+            "example": 1
+          },
+          "hasNextPage": {
+            "type": "boolean",
+            "example": false
+          },
+          "hasPreviousPage": {
+            "type": "boolean",
+            "example": false
+          }
+        }
+      },
+      "CashoutListItem": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "example": "b2c3d4e5-f6a7-8901-bcde-f23456789012"
+          },
+          "amount": {
+            "type": "integer",
+            "example": 50000
+          },
+          "fee": {
+            "type": "integer",
+            "example": 200
+          },
+          "netAmount": {
+            "type": "integer",
+            "example": 49800
+          },
+          "status": {
+            "type": "string",
+            "example": "Completed"
+          },
+          "pixKeyType": {
+            "type": "string",
+            "nullable": true,
+            "example": "CPF"
+          },
+          "pixKey": {
+            "type": "string",
+            "nullable": true,
+            "example": "***456789**"
+          },
+          "endToEndId": {
+            "type": "string",
+            "nullable": true,
+            "example": "E12345678202501151600xyz789abc012"
+          },
+          "failureReason": {
+            "type": "string",
+            "nullable": true,
+            "example": null
+          },
+          "requestedAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2025-01-15T16:00:00Z"
+          },
+          "completedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "example": "2025-01-15T16:05:00Z"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2025-01-15T16:00:00Z"
+          }
+        }
+      },
+      "GetCashoutResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/CashoutData"
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "error": {
+            "$ref": "#/components/schemas/ApiErrorResponse"
+          }
+        }
+      },
+      "CancelCashoutResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/CancelCashoutData"
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "error": {
+            "$ref": "#/components/schemas/ApiErrorResponse"
+          }
+        }
+      },
+      "CancelCashoutData": {
+        "type": "object",
+        "nullable": true,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "ID do saque cancelado",
+            "example": "b2c3d4e5-f6a7-8901-bcde-f23456789012"
+          },
+          "status": {
+            "type": "string",
+            "description": "Novo status",
+            "example": "Cancelled"
+          }
+        }
+      },
+      "SimulateCashoutRequest": {
+        "type": "object",
+        "required": ["action"],
+        "properties": {
+          "action": {
+            "type": "integer",
+            "enum": [1, 2, 3],
+            "description": "Acao: 1=Complete, 2=Fail, 3=Reject",
+            "example": 1
+          }
+        }
+      },
+      "SimulateCashoutResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/SimulateCashoutData"
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "error": {
+            "$ref": "#/components/schemas/ApiErrorResponse"
+          }
+        }
+      },
+      "SimulateCashoutData": {
+        "type": "object",
+        "nullable": true,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "example": "b2c3d4e5-f6a7-8901-bcde-f23456789012"
+          },
+          "externalId": {
+            "type": "string",
+            "nullable": true,
+            "example": "saque_001"
+          },
+          "amount": {
+            "type": "integer",
+            "example": 50000
+          },
+          "fee": {
+            "type": "integer",
+            "example": 200
+          },
+          "netAmount": {
+            "type": "integer",
+            "example": 49800
+          },
+          "currency": {
+            "type": "string",
+            "example": "BRL"
+          },
+          "status": {
+            "type": "string",
+            "example": "Completed"
+          },
+          "environment": {
+            "type": "string",
+            "example": "Sandbox"
+          },
+          "pix": {
+            "$ref": "#/components/schemas/SimulateCashoutPixData"
+          },
+          "requestedAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2025-01-15T16:00:00Z"
+          },
+          "processedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "example": "2025-01-15T16:02:00Z"
+          },
+          "completedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "example": "2025-01-15T16:05:00Z"
+          },
+          "failureReason": {
+            "type": "string",
+            "nullable": true,
+            "example": null
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2025-01-15T16:00:00Z"
+          }
+        }
+      },
+      "SimulateCashoutPixData": {
+        "type": "object",
+        "properties": {
+          "pixKeyType": {
+            "type": "string",
+            "nullable": true,
+            "example": "CPF"
+          },
+          "pixKey": {
+            "type": "string",
+            "nullable": true,
+            "example": "***456789**"
+          },
+          "endToEndId": {
+            "type": "string",
+            "nullable": true,
+            "example": "E12345678202501151600xyz789abc012"
+          },
+          "acquirerTransactionId": {
+            "type": "string",
+            "nullable": true,
+            "example": "SANDBOX_TXN_001"
+          }
+        }
       }
     }
-  }
+  },
+  "tags": [
+    {
+      "name": "Autenticacao",
+      "description": "Endpoints de autenticacao OAuth2"
+    },
+    {
+      "name": "Transacoes",
+      "description": "Gerenciamento de transacoes PIX"
+    },
+    {
+      "name": "Clientes",
+      "description": "Gerenciamento de clientes"
+    },
+    {
+      "name": "Saldo",
+      "description": "Consulta de saldo e volumes"
+    },
+    {
+      "name": "Saques",
+      "description": "Solicitacao e gerenciamento de saques"
+    }
+  ]
 }

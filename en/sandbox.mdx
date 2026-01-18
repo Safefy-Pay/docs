@@ -1,0 +1,139 @@
+---
+title: "Sandbox"
+description: "Test your integration without real payments"
+---
+
+The **Sandbox** environment lets you test the full payment flow without real transactions.
+
+## How it works
+
+At Safefy, **there is no separate URL** for Sandbox and Production. The environment is determined by the **API credential type** you use.
+
+| Credential type | Environment | Behavior |
+|----------------|------------|----------|
+| **Sandbox** | Testing | Simulated payments, fictitious balance |
+| **Production** | Live | Real PIX transactions |
+
+**API URL:** `https://api-payment.safefypay.com.br`
+
+<Info>
+The same URL is used for both environments. What changes is the credential used for authentication.
+</Info>
+
+---
+
+## Creating credentials
+
+In the Safefy dashboard, you can create credentials for each environment:
+
+<Steps>
+  <Step title="Access the dashboard">
+    Go to [app.safefypay.com.br](https://app.safefypay.com.br) and select your organization.
+  </Step>
+  <Step title="Go to Credentials">
+    In the side menu, open the API credentials section.
+  </Step>
+  <Step title="Create the credential">
+    Choose **Sandbox** for tests or **Production** for live transactions.
+  </Step>
+  <Step title="Save the Client Secret">
+    The Client Secret is shown only once. Store it safely.
+  </Step>
+</Steps>
+
+---
+
+## Simulating payments
+
+In Sandbox, you can simulate different transaction statuses using the simulation endpoint:
+
+```bash
+curl -X POST https://api-payment.safefypay.com.br/v1/transactions/{id}/simulate \
+  -H "Authorization: Bearer {token}" \
+  -H "Content-Type: application/json" \
+  -d '{ "action": "complete" }'
+```
+
+### Available actions
+
+| Action | Current status | New status | Description |
+|--------|----------------|-----------|-------------|
+| `complete` | `Pending` | `Completed` | Simulates a confirmed payment |
+| `expire` | `Pending` | `Expired` | Simulates expiration |
+| `fail` | `Pending` | `Failed` | Simulates failure |
+| `refund` | `Completed` | `Refunded` | Simulates a refund |
+
+<Warning>
+The simulation endpoint works only with **Sandbox** credentials. In Production, payments are processed automatically by the PIX system.
+</Warning>
+
+---
+
+## Full test flow
+
+<Steps>
+  <Step title="Create a transaction">
+    Use Sandbox credentials to create a PIX transaction.
+  </Step>
+  <Step title="Show the QR Code">
+    Display the qrCode or copyAndPaste in your interface.
+  </Step>
+  <Step title="Simulate the payment">
+    Use the /simulate endpoint with action: complete.
+  </Step>
+  <Step title="Receive the webhook">
+    Your callbackUrl will receive the transaction.completed event.
+  </Step>
+  <Step title="Validate the flow">
+    Check that your application released the product/service correctly.
+  </Step>
+</Steps>
+
+---
+
+## Simulating cashouts
+
+You can also simulate cashout processing:
+
+```bash
+curl -X POST https://api-payment.safefypay.com.br/v1/cashouts/{id}/simulate \
+  -H "Authorization: Bearer {token}" \
+  -H "Content-Type: application/json" \
+  -d '{ "action": "Complete" }'
+```
+
+| Action | Description |
+|--------|-----------|
+| `Complete` | Simulates a completed cashout |
+| `Fail` | Simulates a cashout failure |
+| `Reject` | Simulates a rejected cashout |
+
+---
+
+## Test data
+
+In Sandbox, you can use any valid data to create transactions and customers:
+
+```json
+{
+  "name": "Joao da Silva Test",
+  "email": "joao@teste.com",
+  "document": "12345678901",
+  "documentType": "CPF"
+}
+```
+
+---
+
+## Going to Production
+
+When your integration is ready:
+
+1. Create a **Production** credential in the dashboard
+2. Replace the Client ID and Client Secret in your system
+3. Remove calls to the /simulate endpoint
+4. Test with low-value transactions first
+
+<Card title="Create a test transaction" icon="play" href="/api-reference/transactions/create">
+  Try creating a transaction in the playground.
+</Card>

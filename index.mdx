@@ -1,59 +1,143 @@
 ---
-title: "Como a Safefy funciona"
-description: "Visão geral do fluxo de pagamentos e da integração"
+title: "Comece aqui"
+description: "Tudo o que voce precisa saber para integrar com a Safefy"
 ---
 
-Safefy é uma plataforma de pagamentos focada em **PIX**, com autenticação segura, webhooks confiáveis e ferramentas para conciliação. A API foi desenhada para ser simples, previsível e segura.
+## O que e a Safefy?
 
-## Fluxo principal
+Integrar com pagamentos pode ser complicado: documentacoes confusas, SDKs pesados, respostas inconsistentes. A **Safefy** nasceu para resolver isso.
 
-1. **Crie suas credenciais** no painel Safefy (ambiente Sandbox ou Produção)
-2. **Gere um token de acesso** via OAuth2 (client credentials)
-3. **Crie clientes** (opcional) para organizar pagamentos
-4. **Crie transações** e receba o QR Code / Copia e Cola
-5. **Receba webhooks** com o status do pagamento
-6. **Consulte transações e saldos** para conciliação
+Somos uma plataforma de pagamentos focada em **PIX** que oferece:
+
+- **PIX** como metodo de pagamento rapido, seguro e em conformidade com as melhores praticas
+- Interface completa e intuitiva para gestao financeira
+- Suporte exclusivo e eficiente
 
 <CardGroup cols={2}>
   <Card title="Primeiros passos" icon="rocket" href="/quickstart">
-    Crie credenciais, gere o token e realize sua primeira transação.
+    Crie credenciais, gere o token e realize sua primeira transacao.
   </Card>
-  <Card title="Autenticação" icon="key" href="/authentication">
-    Como obter o access token e autenticar chamadas na API.
+  <Card title="Referencia da API" icon="code" href="/api-reference/auth/token">
+    Explore todos os endpoints disponiveis.
   </Card>
 </CardGroup>
 
-## Ambientes
+---
 
-- **Sandbox**: testes e simulações de pagamento
-- **Produção**: transações reais
+## Estrutura de Organizacoes
 
-## Versão e base path
+Na Safefy, um **usuario** pode criar e gerenciar **multiplas organizacoes**. Cada organizacao representa um CNPJ ou negocio diferente.
 
-Todas as rotas da API usam o prefixo **/v1**.
+**Como funciona:**
 
-## Valores monetários
+- Cada organizacao possui seu proprio **saldo**, **transacoes**, **clientes** e **credenciais de API**
+- Os dados sao completamente **isolados** entre organizacoes
+- Um usuario pode alternar entre organizacoes no painel
+- As credenciais de API sao vinculadas a uma organizacao especifica
 
-Todos os valores são enviados em **centavos** (menor unidade da moeda).
+<Info>
+Ao criar uma credencial de API, ela pertence a organizacao selecionada no momento. Todas as transacoes realizadas com essa credencial serao registradas naquela organizacao.
+</Info>
 
-| Valor real | Valor na API |
+---
+
+## API descomplicada
+
+Nossa API foi construida seguindo tres principios:
+
+### 1. Baseada em intencao
+
+Voce diz **o que quer fazer**, e nos cuidamos do resto. Para criar uma cobranca PIX:
+
+```bash
+curl -X POST https://api-payment.safefypay.com.br/v1/transactions \
+  -H "Authorization: Bearer {token}" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "method": "pix",
+    "amount": 1000,
+    "currency": "BRL",
+    "description": "Assinatura mensal"
+  }'
+```
+
+### 2. Idempotente
+
+Use o campo `externalId` para garantir que uma requisicao duplicada nao crie recursos duplicados. Se voce enviar duas vezes com o mesmo `externalId`, a segunda sera ignorada.
+
+```json
+{
+  "externalId": "pedido-123",
+  "method": "pix",
+  "amount": 1000,
+  "currency": "BRL"
+}
+```
+
+### 3. Consistente
+
+Todas as respostas seguem o mesmo padrao, seja sucesso ou erro:
+
+```json
+// Sucesso
+{
+  "data": {
+    "id": "550e8400-e29b-41d4-a716-446655440000",
+    "status": "Pending",
+    "amount": 1000
+  },
+  "message": "Transacao criada com sucesso"
+}
+```
+
+```json
+// Erro
+{
+  "data": null,
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "O campo 'amount' e obrigatorio"
+  }
+}
+```
+
+---
+
+## Valores monetarios
+
+Todos os valores sao enviados em **centavos** (menor unidade da moeda).
+
+| Valor Real | Valor na API |
 |------------|--------------|
 | R$ 1,00    | 100          |
 | R$ 10,50   | 1050         |
 | R$ 100,00  | 10000        |
 
-## Segurança
+---
 
-- Tokens JWT com expiração
-- Validação de IP (quando configurada)
-- Assinatura de webhook em `X-Safefy-Signature`
+## Ambientes
 
-## Need inspiration?
+O ambiente (Sandbox ou Production) e determinado pela **credencial de API** utilizada. Nao existe URL separada para cada ambiente.
 
-<Card
-  title="See complete examples"
-  icon="stars"
-  href="https://mintlify.com/customers"
->
-  Browse our showcase of exceptional documentation sites.
+| Ambiente | Descricao |
+|----------|-----------|
+| **Sandbox** | Credenciais de sandbox permitem testes e simulacoes. Nenhum dinheiro real e movimentado. |
+| **Production** | Credenciais de producao processam transacoes reais via PIX. |
+
+**URL da API:** `https://api-payment.safefypay.com.br`
+
+<Note>
+Para testar, crie uma credencial de **Sandbox** no painel. Para ir para producao, crie uma credencial de **Production** na mesma organizacao.
+</Note>
+
+---
+
+## Duvidas?
+
+Estamos sempre disponiveis para ajudar na sua integracao:
+
+**suporte@safefypay.com.br**
+
+<Card title="Acessar Painel" icon="arrow-up-right-from-square" href="https://app.safefypay.com.br">
+  Acesse o painel para criar suas credenciais e gerenciar pagamentos.
 </Card>

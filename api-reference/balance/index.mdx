@@ -1,0 +1,145 @@
+---
+title: "Objeto Saldo"
+description: "Estrutura e atributos do objeto Saldo na API Safefy"
+---
+
+O objeto Saldo (Balance) representa o estado financeiro atual da sua conta Safefy. Ele fornece informacoes sobre saldo disponivel, pendente, reservado e totais acumulados.
+
+## Estrutura
+
+```json
+{
+  "currency": "BRL",
+  "balance": {
+    "available": 1500000,
+    "pending": 250000,
+    "reserved": 50000,
+    "total": 1800000
+  },
+  "totals": {
+    "lifetimeVolume": 50000000,
+    "lifetimePayouts": 35000000,
+    "lifetimeRefunds": 500000
+  },
+  "period": {
+    "volumeToday": 500000,
+    "volumeThisWeek": 2500000,
+    "volumeThisMonth": 10000000
+  },
+  "updatedAt": "2024-01-15T10:30:00Z"
+}
+```
+
+## Atributos
+
+<ParamField body="currency" type="string" required>
+  Moeda do saldo. Atualmente apenas `BRL` (Real Brasileiro) e suportado.
+</ParamField>
+
+<ParamField body="balance" type="object" required>
+  Informacoes do saldo atual da conta.
+  
+  <Expandable title="Atributos do balance">
+    <ParamField body="balance.available" type="integer" required>
+      Saldo disponivel para saque em centavos. Este valor pode ser transferido para sua conta bancaria.
+    </ParamField>
+    <ParamField body="balance.pending" type="integer" required>
+      Saldo pendente em centavos. Pagamentos aguardando confirmacao ou em periodo de liquidacao.
+    </ParamField>
+    <ParamField body="balance.reserved" type="integer" required>
+      Saldo reservado em centavos. Valores bloqueados para saques em processamento ou disputas.
+    </ParamField>
+    <ParamField body="balance.total" type="integer" required>
+      Saldo total em centavos. Soma de `available + pending + reserved`.
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+<ParamField body="totals" type="object" required>
+  Totais acumulados desde a criacao da conta.
+  
+  <Expandable title="Atributos dos totals">
+    <ParamField body="totals.lifetimeVolume" type="integer" required>
+      Volume total processado em centavos desde a criacao da conta.
+    </ParamField>
+    <ParamField body="totals.lifetimePayouts" type="integer" required>
+      Total de saques realizados em centavos desde a criacao da conta.
+    </ParamField>
+    <ParamField body="totals.lifetimeRefunds" type="integer" required>
+      Total de estornos em centavos desde a criacao da conta.
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+<ParamField body="period" type="object" required>
+  Volume processado por periodo.
+  
+  <Expandable title="Atributos do period">
+    <ParamField body="period.volumeToday" type="integer" required>
+      Volume processado hoje em centavos.
+    </ParamField>
+    <ParamField body="period.volumeThisWeek" type="integer" required>
+      Volume processado nesta semana em centavos.
+    </ParamField>
+    <ParamField body="period.volumeThisMonth" type="integer" required>
+      Volume processado neste mes em centavos.
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+<ParamField body="updatedAt" type="string" required>
+  Data e hora da ultima atualizacao do saldo no formato ISO 8601.
+</ParamField>
+
+## Entendendo o Saldo
+
+### Saldo Disponivel (`available`)
+O valor que voce pode sacar imediatamente para sua conta bancaria. Este saldo ja foi confirmado e esta livre para uso.
+
+### Saldo Pendente (`pending`)
+Pagamentos que foram recebidos mas ainda estao em periodo de processamento ou liquidacao. Apos a confirmacao, esse valor sera movido para o saldo disponivel.
+
+### Saldo Reservado (`reserved`)
+Valores temporariamente bloqueados para:
+- Saques em processamento
+- Disputas em andamento
+- Garantias de chargebacks
+
+### Saldo Total (`total`)
+A soma de todos os saldos: `available + pending + reserved`.
+
+## Fluxo do Saldo
+
+```
+Pagamento Recebido
+        ↓
+   [Pending]
+        ↓
+  Confirmado
+        ↓
+  [Available]
+        ↓
+   Saque Solicitado
+        ↓
+  [Reserved]
+        ↓
+  Saque Concluido
+        ↓
+  Conta Bancaria
+```
+
+## Exemplos de Valores
+
+| Valor em Centavos | Valor em Reais |
+|-------------------|----------------|
+| `100` | R$ 1,00 |
+| `1500` | R$ 15,00 |
+| `15000` | R$ 150,00 |
+| `150000` | R$ 1.500,00 |
+| `1500000` | R$ 15.000,00 |
+
+## Endpoints
+
+| Metodo | Endpoint | Descricao |
+|--------|----------|-----------|
+| `GET` | `/v1/balance` | [Consultar saldo](/api-reference/balance/get) |

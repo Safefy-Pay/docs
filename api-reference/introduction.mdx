@@ -3,19 +3,31 @@ title: "Introdução da API"
 description: "Referência completa com Try It"
 ---
 
-Esta seção apresenta a referência completa da Safefy API, com **Try It** habilitado para testar os endpoints diretamente.
+Esta seção apresenta a referência completa da Safefy API, com **Try It** habilitado para testar os endpoints diretamente, seguindo o padrão de referência estilo AbacatePay.
 
 ## Como usar
 
 1. Gere um token em [Autenticação](/authentication)
 2. Abra a página de [API Reference](/api-reference/reference)
-3. Clique em **Try It** e informe o token no campo `Authorization`
+3. Clique em **Try It** e informe o token no campo `Authorization` no formato `Bearer <token>`
 
 ## Ambientes
 
 - **Sandbox**: para testes e simulações
 - **Produção**: para transações reais
 
+## Sandbox (recomendado para começar)
+
+Use o ambiente Sandbox para simular pagamentos e validar seu fluxo. Você pode:
+
+- Criar transações PIX sem movimentação real
+- Simular mudanças de status via `/v1/transactions/{id}/simulate`
+- Receber webhooks com os eventos de teste
+
 ## Autenticação
 
 Todos os endpoints protegidos usam **Bearer Token** no header `Authorization`.
+
+## Métodos e endpoints
+
+Os métodos HTTP (GET, POST, PATCH, etc.) e os schemas de request/response são exibidos no **Try It**. Cada endpoint pode ser testado diretamente na referência.

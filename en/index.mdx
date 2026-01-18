@@ -1,0 +1,143 @@
+---
+title: "Get started"
+description: "Everything you need to integrate with Safefy"
+---
+
+## What is Safefy?
+
+Integrating payments can be hard: confusing docs, heavy SDKs, inconsistent responses. **Safefy** was built to solve that.
+
+We are a **PIX** payments platform that offers:
+
+- **PIX** as a fast, secure payment method aligned with best practices
+- A complete and intuitive financial management interface
+- Dedicated and responsive support
+
+<CardGroup cols={2}>
+  <Card title="Getting started" icon="rocket" href="/en/quickstart">
+    Create credentials, generate a token, and send your first transaction.
+  </Card>
+  <Card title="API Reference" icon="code" href="/api-reference/auth/token">
+    Explore all available endpoints.
+  </Card>
+</CardGroup>
+
+---
+
+## Organization structure
+
+In Safefy, a **user** can create and manage **multiple organizations**. Each organization represents a different CNPJ or business.
+
+**How it works:**
+
+- Each organization has its own **balance**, **transactions**, **customers**, and **API credentials**
+- Data is fully **isolated** across organizations
+- A user can switch between organizations in the dashboard
+- API credentials are tied to a specific organization
+
+<Info>
+When you create an API credential, it belongs to the organization selected at that moment. All transactions made with that credential will be recorded under that organization.
+</Info>
+
+---
+
+## Simple API
+
+Our API was built around three principles:
+
+### 1. Intent-based
+
+You say **what you want to do**, and we handle the rest. To create a PIX charge:
+
+```bash
+curl -X POST https://api-payment.safefypay.com.br/v1/transactions \
+  -H "Authorization: Bearer {token}" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "method": "pix",
+    "amount": 1000,
+    "currency": "BRL",
+    "description": "Monthly subscription"
+  }'
+```
+
+### 2. Idempotent
+
+Use the `externalId` field to ensure a duplicate request does not create duplicate resources. If you send the same `externalId` twice, the second request will be ignored.
+
+```json
+{
+  "externalId": "order-123",
+  "method": "pix",
+  "amount": 1000,
+  "currency": "BRL"
+}
+```
+
+### 3. Consistent
+
+All responses follow the same pattern for both success and error:
+
+```json
+// Success
+{
+  "data": {
+    "id": "550e8400-e29b-41d4-a716-446655440000",
+    "status": "Pending",
+    "amount": 1000
+  },
+  "message": "Transaction created successfully"
+}
+```
+
+```json
+// Error
+{
+  "data": null,
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "The 'amount' field is required"
+  }
+}
+```
+
+---
+
+## Monetary values
+
+All values are sent in **cents** (the smallest currency unit).
+
+| Real Value | API Value |
+|------------|-----------|
+| R$ 1,00    | 100       |
+| R$ 10,50   | 1050      |
+| R$ 100,00  | 10000     |
+
+---
+
+## Environments
+
+The environment (Sandbox or Production) is determined by the **API credential** used. There is no separate URL per environment.
+
+| Environment | Description |
+|------------|-------------|
+| **Sandbox** | Sandbox credentials allow tests and simulations. No real money moves. |
+| **Production** | Production credentials process real PIX transactions. |
+
+**API URL:** `https://api-payment.safefypay.com.br`
+
+<Note>
+To test, create a **Sandbox** credential in the dashboard. To go live, create a **Production** credential in the same organization.
+</Note>
+
+---
+
+## Questions?
+
+We are always available to help with your integration:
+
+**suporte@safefypay.com.br**
+
+<Card title="Access Dashboard" icon="arrow-up-right-from-square" href="https://app.safefypay.com.br">
+  Access the dashboard to create credentials and manage payments.
+</Card>

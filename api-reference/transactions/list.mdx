@@ -1,0 +1,41 @@
+---
+title: "Listar transacoes"
+description: "Liste e filtre transacoes"
+openapi: "/api-reference/openapi.json GET /v1/transactions"
+---
+
+Retorna uma lista paginada de transacoes com opcoes de filtragem.
+
+## Parametros de Query
+
+<ParamField query="page" type="integer">
+  Numero da pagina. Padrao: 1.
+</ParamField>
+
+<ParamField query="pageSize" type="integer">
+  Quantidade de itens por pagina. Padrao: 20. Maximo: 100.
+</ParamField>
+
+<ParamField query="method" type="string">
+  Filtrar por metodo de pagamento: `Pix`.
+</ParamField>
+
+<ParamField query="status" type="string">
+  Filtrar por status: `Pending`, `Completed`, `Expired`, `Failed`, `Refunded`.
+</ParamField>
+
+<ParamField query="externalId" type="string">
+  Filtrar por ID externo.
+</ParamField>
+
+<ParamField query="customerId" type="string">
+  Filtrar por ID do cliente (UUID).
+</ParamField>
+
+<ParamField query="startDate" type="string">
+  Data inicial no formato ISO 8601.
+</ParamField>
+
+<ParamField query="endDate" type="string">
+  Data final no formato ISO 8601.
+</ParamField>
