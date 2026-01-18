@@ -1,0 +1,68 @@
+---
+title: "Autenticação"
+description: "Obtenha e utilize o access token JWT"
+---
+
+A Safefy utiliza **OAuth2 Client Credentials** para autenticação. O token retornado é um JWT e deve ser enviado no header `Authorization`.
+
+## Endpoint
+
+**POST** `/v1/auth/token`
+
+## Body
+
+| Campo | Tipo | Obrigatório | Descrição |
+|------|------|-------------|-----------|
+| `grantType` | string | sim | Sempre `client_credentials` |
+| `publicKey` | string | sim | Chave pública da credencial |
+| `secretKey` | string | sim | Chave secreta da credencial |
+
+## Resposta
+
+| Campo | Tipo | Descrição |
+|------|------|-----------|
+| `data.accessToken` | string | Token JWT para autenticação |
+| `data.tokenType` | string | Sempre `Bearer` |
+| `data.expiresIn` | int | Tempo de expiração em segundos |
+| `data.environment` | string | `Sandbox` ou `Production` |
+
+## Exemplo de requisição
+
+```bash
+curl -X POST https://api.safefypay.com.br/v1/auth/token \
+  -H "Content-Type: application/json" \
+  -d '{
+    "grantType": "client_credentials",
+    "publicKey": "pub_...",
+    "secretKey": "sec_..."
+  }'
+```
+
+## Exemplo de resposta
+
+```json
+{
+  "data": {
+    "accessToken": "<jwt>",
+    "tokenType": "Bearer",
+    "expiresIn": 3600,
+    "environment": "Sandbox"
+  }
+}
+```
+
+## Uso do token
+
+Envie o token em todas as requisições protegidas:
+
+```
+Authorization: Bearer <token>
+```
+
+## Rate limit
+
+A geração de tokens é limitada por credencial. Se o limite for atingido, a API retorna **429** com o header `Retry-After`.
+
+## Restrições de IP
+
+Se sua credencial tiver IPs permitidos configurados, a API retornará **403** quando a origem não estiver autorizada.

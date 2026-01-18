@@ -1,0 +1,31 @@
+---
+title: "Padrão de respostas e erros"
+description: "Entenda o formato das respostas da API"
+---
+
+A Safefy utiliza um formato padrão para respostas de sucesso e erro.
+
+## Resposta de sucesso
+
+```json
+{
+  "data": { "...": "..." },
+  "message": "Mensagem opcional"
+}
+```
+
+## Resposta de erro
+
+```json
+{
+  "error": {
+    "message": "Descrição do erro",
+    "code": "codigo_do_erro"
+  }
+}
+```
+
+## Observações
+
+- O campo `message` é opcional
+- O campo `error.code` permite tratamento programático

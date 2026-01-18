@@ -1,0 +1,63 @@
+---
+title: "Webhooks"
+description: "Receba eventos de pagamentos em tempo real"
+---
+
+A Safefy envia webhooks para manter seu sistema sincronizado com o status das transações.
+
+## Headers enviados
+
+- `X-Safefy-Signature`
+- `X-Safefy-Event`
+- `X-Safefy-Delivery`
+- `X-Safefy-Attempt`
+
+## Eventos
+
+- `payment.completed`
+- `payment.expired`
+- `payment.failed`
+- `payment.cancelled`
+- `payment.refunded`
+- `payment.partially_refunded`
+- `payment.refund_requested`
+
+## Payload
+
+```json
+{
+  "id": "whk_123",
+  "type": "payment.completed",
+  "createdAt": "2026-01-18T12:00:00Z",
+  "data": {
+    "id": "019b5abf-3fb4-7d1b-9933-72cdb5d5b28a",
+    "externalId": "order-456",
+    "amount": 15500,
+    "fee": 200,
+    "netAmount": 15300,
+    "currency": "BRL",
+    "method": "Pix",
+    "status": "Completed",
+    "environment": "Sandbox",
+    "description": "Pagamento do pedido #456",
+    "completedAt": "2026-01-18T12:00:00Z",
+    "refundedAt": null,
+    "expiresAt": "2026-01-18T12:30:00Z",
+    "failureReason": null,
+    "customerId": "019b5abe-cdb1-72d2-b25a-a81bfc495557",
+    "pix": {
+      "txId": "TX123",
+      "endToEndId": "E2E123",
+      "payerName": "Joao Silva",
+      "payerDocument": "12345678901",
+      "payerBank": "Banco Sandbox"
+    }
+  }
+}
+```
+
+## Boas práticas
+
+- Responda com **2xx** rapidamente
+- Faça retry idempotente
+- Valide a assinatura antes de processar o evento

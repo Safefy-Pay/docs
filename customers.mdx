@@ -1,0 +1,47 @@
+---
+title: "Clientes"
+description: "Crie, consulte e atualize clientes"
+---
+
+Clientes ajudam a organizar pagamentos e facilitar conciliações. Você pode criar um cliente uma vez e reutilizá-lo em várias transações.
+
+## Endpoints
+
+- **POST** `/v1/customers`
+- **GET** `/v1/customers`
+- **GET** `/v1/customers/{id}`
+- **PATCH** `/v1/customers/{id}`
+
+## Criar cliente
+
+Campos obrigatórios:
+- `name`
+- `email`
+
+Campos opcionais:
+- `externalId`, `document`, `documentType`, `phone`, `metadata`
+- Endereço: `addressStreet`, `addressNumber`, `addressComplement`, `addressNeighborhood`, `addressCity`, `addressState`, `addressPostalCode`, `addressCountry`
+
+```json
+{
+  "name": "Andre",
+  "email": "andre.silva@email.com",
+  "document": "12345678901",
+  "documentType": "CPF",
+  "phone": "5511999999999",
+  "externalId": "customer-002"
+}
+```
+
+## Buscar e listar
+
+- **GET** `/v1/customers/{id}` retorna o cliente por ID
+- **GET** `/v1/customers` suporta filtros por `status`, `documentType`, `search`, `externalId`, `startDate`, `endDate`
+
+## Atualizar
+
+O endpoint de atualização usa `PATCH` e **apenas os campos enviados são alterados**. Para desativar um cliente, envie `"status": "Inactive"`.
+
+## Idempotência
+
+Use `externalId` para garantir idempotência em integrações que possam repetir requisições.

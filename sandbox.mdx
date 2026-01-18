@@ -1,0 +1,28 @@
+---
+title: "Sandbox"
+description: "Teste sua integração sem pagamentos reais"
+---
+
+O ambiente **Sandbox** permite simular todo o fluxo de pagamentos com segurança.
+
+## Simular eventos de transação
+
+Use o endpoint de simulação para alterar o status da transação:
+
+**POST** `/v1/transactions/{id}/simulate`
+
+```json
+{ "action": "complete" }
+```
+
+Ações suportadas:
+- `complete`
+- `expire`
+- `fail`
+- `refund`
+
+## Regras
+
+- Apenas transações em **Sandbox** podem ser simuladas
+- Para `refund`, a transação precisa estar `Completed`
+- Um webhook é disparado após a simulação
