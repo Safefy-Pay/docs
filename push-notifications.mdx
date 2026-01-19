@@ -1,0 +1,55 @@
+---
+title: "Notificações Push"
+description: "Como ativar as notificações push no painel Safefy"
+---
+
+As notificações push permitem receber alertas em tempo real sobre pagamentos, saques e eventos de segurança.
+
+## Pré-requisitos
+
+- O navegador deve suportar notificações, Service Worker e Push.
+- **No iOS**, as notificações push só funcionam quando o painel está instalado como **PWA**.
+
+<Warning>
+No iOS, notificações push não funcionam no Safari aberto em aba. É obrigatório instalar o PWA na Tela de Início.
+</Warning>
+
+## 1. Instale o PWA
+
+### iOS (Safari)
+
+1. Abra o painel no Safari.
+2. Toque em **Compartilhar**.
+3. Selecione **Adicionar à Tela de Início**.
+4. Abra o app pelo ícone instalado.
+
+### Android (Chrome)
+
+1. Abra o painel no Chrome.
+2. Toque em **Instalar app**.
+3. Confirme a instalação.
+4. Abra o app pela tela inicial.
+
+### Desktop (Chrome/Edge)
+
+1. Abra o painel no navegador.
+2. Clique no ícone de instalação na barra de endereços.
+3. Confirme a instalação.
+
+## 2. Ative nas configurações
+
+1. Acesse **Configurações → Notificações** no painel.
+2. Ative **Notificações push**.
+3. Permita a notificação quando o navegador solicitar.
+
+Se a permissão estiver bloqueada, reabra o painel e libere a permissão nas configurações do navegador.
+
+## 3. Notificações por dispositivo
+
+As notificações push são disparadas para **cada dispositivo habilitado** do mesmo usuário.
+
+### Exemplos
+
+- Se o usuário ativar o push no **iPhone** e no **Notebook**, ambos recebem a notificação.
+- Se o usuário ativar o push em **3 dispositivos**, a mesma notificação será enviada para os 3.
+- Se um dispositivo estiver desativado, apenas os dispositivos habilitados receberão.

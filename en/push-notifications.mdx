@@ -1,0 +1,55 @@
+---
+title: "Push Notifications"
+description: "How to enable push notifications in the Safefy dashboard"
+---
+
+Push notifications deliver real-time alerts about payments, cashouts, and security events.
+
+## Prerequisites
+
+- The browser must support Notifications, Service Worker, and Push.
+- **On iOS**, push notifications only work when the dashboard is installed as a **PWA**.
+
+<Warning>
+On iOS, push notifications do not work in a regular Safari tab. You must install the PWA on the Home Screen.
+</Warning>
+
+## 1. Install the PWA
+
+### iOS (Safari)
+
+1. Open the dashboard in Safari.
+2. Tap **Share**.
+3. Select **Add to Home Screen**.
+4. Open the app from the installed icon.
+
+### Android (Chrome)
+
+1. Open the dashboard in Chrome.
+2. Tap **Install app**.
+3. Confirm the installation.
+4. Open the app from the home screen.
+
+### Desktop (Chrome/Edge)
+
+1. Open the dashboard in the browser.
+2. Click the install icon in the address bar.
+3. Confirm the installation.
+
+## 2. Enable in settings
+
+1. Go to **Settings → Notifications** in the dashboard.
+2. Enable **Push notifications**.
+3. Allow notifications when the browser prompts you.
+
+If permission is blocked, reopen the dashboard and allow it in the browser settings.
+
+## 3. Per-device delivery
+
+Push notifications are sent to **each enabled device** for the same user.
+
+### Examples
+
+- If the user enables push on **iPhone** and **Laptop**, both receive the notification.
+- If the user enables push on **3 devices**, the same notification is sent to all 3.
+- If a device is disabled, only enabled devices receive it.

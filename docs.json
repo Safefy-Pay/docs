@@ -28,7 +28,7 @@
 							},
 							{
 								"group": "Conceitos",
-								"pages": ["authentication", "webhooks", "errors"]
+								"pages": ["authentication", "webhooks", "push-notifications", "errors"]
 							},
 							
 							{
@@ -95,7 +95,7 @@
 							},
 							{
 								"group": "Concepts",
-								"pages": ["en/authentication", "en/webhooks", "en/errors"]
+								"pages": ["en/authentication", "en/webhooks", "en/push-notifications", "en/errors"]
 							},
 							{
 								"group": "API Status",
