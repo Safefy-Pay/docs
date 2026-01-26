@@ -1,0 +1,443 @@
+---
+title: "Webhooks de transação"
+description: "Entenda como a Safefy envia webhooks de pagamento quando o status muda"
+---
+
+Esta página explica, de forma simples, como funcionam os webhooks enviados para o `callbackUrl` informado ao criar uma transação.
+
+## Quando o webhook é enviado
+
+- Você informa o `callbackUrl` ao criar a transação.
+- Sempre que o **status do pagamento** mudar, a Safefy envia um **POST** para esse endereço.
+- Se não houver `callbackUrl`, nenhum webhook é enviado.
+
+## Eventos possíveis
+
+| Evento | O que significa | Status na transação |
+|--------|----------------|---------------------|
+| `payment.completed` | Pagamento confirmado | `Completed` |
+| `payment.expired` | Tempo expirou | `Expired` |
+| `payment.failed` | Falha no processamento | `Failed` |
+| `payment.cancelled` | Cancelamento manual | `Cancelled` |
+| `payment.refunded` | Estorno total | `Refunded` |
+| `payment.partially_refunded` | Estorno parcial | `PartiallyRefunded` |
+| `payment.refund_requested` | Estorno solicitado | `Processing` |
+
+## Cabeçalhos enviados
+
+Cada webhook é enviado com os seguintes headers:
+
+- `X-Safefy-Signature`: assinatura HMAC-SHA256 do corpo do webhook
+- `X-Safefy-Event`: o evento (ex: `payment.completed`)
+- `X-Safefy-Delivery`: identificador único da entrega
+- `X-Safefy-Attempt`: número da tentativa (1, 2, 3)
+
+### Como validar a assinatura
+
+A assinatura é um HMAC-SHA256 do **corpo bruto** (string JSON) usando como segredo o **ID da transação** (`paymentId`).
+
+**Exemplo de verificação (conceitual):**
+
+1. Pegue o corpo bruto do webhook exatamente como recebido.
+2. Use o `paymentId` da transação como secret.
+3. Calcule o HMAC-SHA256 e compare com `X-Safefy-Signature`.
+
+O formato do header é: `sha256=<hash>`.
+
+<CodeGroup>
+```javascript JavaScript
+import crypto from 'crypto';
+
+export function validateWebhook(rawBody, signature, paymentId) {
+  const expected = 'sha256=' + crypto
+    .createHmac('sha256', paymentId)
+    .update(rawBody)
+    .digest('hex');
+
+  return crypto.timingSafeEqual(
+    Buffer.from(signature),
+    Buffer.from(expected)
+  );
+}
+```
+
+```typescript TypeScript
+import crypto from 'crypto';
+
+export function validateWebhook(
+  rawBody: string,
+  signature: string,
+  paymentId: string
+): boolean {
+  const expected = 'sha256=' + crypto
+    .createHmac('sha256', paymentId)
+    .update(rawBody)
+    .digest('hex');
+
+  return crypto.timingSafeEqual(
+    Buffer.from(signature),
+    Buffer.from(expected)
+  );
+}
+```
+
+```python Python
+import hmac
+import hashlib
+
+def validate_webhook(raw_body: str, signature: str, payment_id: str) -> bool:
+    expected = 'sha256=' + hmac.new(
+        payment_id.encode('utf-8'),
+        raw_body.encode('utf-8'),
+        hashlib.sha256
+    ).hexdigest()
+
+    return hmac.compare_digest(signature, expected)
+```
+
+```csharp C#
+using System.Security.Cryptography;
+using System.Text;
+
+public static bool ValidateWebhook(string rawBody, string signature, string paymentId)
+{
+    using var hmac = new HMACSHA256(Encoding.UTF8.GetBytes(paymentId));
+    var hash = hmac.ComputeHash(Encoding.UTF8.GetBytes(rawBody));
+    var expected = "sha256=" + Convert.ToHexString(hash).ToLower();
+    return CryptographicOperations.FixedTimeEquals(
+        Encoding.UTF8.GetBytes(signature),
+        Encoding.UTF8.GetBytes(expected)
+    );
+}
+```
+
+```go Go
+package webhooks
+
+import (
+  "crypto/hmac"
+  "crypto/sha256"
+  "encoding/hex"
+)
+
+func ValidateWebhook(rawBody, signature, paymentId string) bool {
+  mac := hmac.New(sha256.New, []byte(paymentId))
+  mac.Write([]byte(rawBody))
+  expected := "sha256=" + hex.EncodeToString(mac.Sum(nil))
+  return hmac.Equal([]byte(signature), []byte(expected))
+}
+```
+</CodeGroup>
+
+## Estrutura do corpo
+
+O body sempre possui a mesma estrutura base. Alguns campos podem vir `null`, dependendo do status.
+
+```json
+{
+  "id": "whk_550e8400-e29b-41d4-a716-446655440000",
+  "type": "payment.completed",
+  "createdAt": "2025-01-15T10:30:00Z",
+  "data": {
+    "id": "550e8400-e29b-41d4-a716-446655440000",
+    "externalId": "pedido-123",
+    "amount": 1000,
+    "fee": 15,
+    "netAmount": 985,
+    "currency": "BRL",
+    "method": "Pix",
+    "status": "Completed",
+    "environment": "Production",
+    "description": "Compra na Loja XYZ",
+    "completedAt": "2025-01-15T10:30:00Z",
+    "refundedAt": null,
+    "expiresAt": "2025-01-15T11:00:00Z",
+    "failureReason": null,
+    "customerId": "550e8400-e29b-41d4-a716-446655440001",
+    "pix": {
+      "txId": "SAFEFY2025011512345678901234",
+      "endToEndId": "E12345678202501151030ABC123",
+      "payerName": "Joao Silva",
+      "payerDocument": "***456789**",
+      "payerBank": "Banco do Brasil"
+    }
+  }
+}
+```
+
+### Campos principais
+
+- `id`: identificador único do webhook
+- `type`: evento disparado
+- `createdAt`: data/hora do envio do webhook
+- `data`: dados da transação
+
+### Campos dentro de `data`
+
+- `id`: ID da transação
+- `externalId`: ID no seu sistema (se informado)
+- `amount`: valor total em centavos
+- `fee`: taxa cobrada pela Safefy em centavos
+- `netAmount`: valor líquido em centavos
+- `currency`: moeda (ex: `BRL`)
+- `method`: método (ex: `Pix`)
+- `status`: status atual
+- `environment`: `Sandbox` ou `Production`
+- `description`: descrição da cobrança
+- `completedAt`: quando o pagamento foi confirmado
+- `refundedAt`: quando o estorno ocorreu
+- `expiresAt`: quando a cobrança expirou
+- `failureReason`: motivo da falha (quando houver)
+- `customerId`: ID do cliente associado (se houver)
+- `pix`: detalhes do PIX (pode ser `null`)
+
+## Todos os corpos possíveis
+
+Abaixo estão todos os formatos possíveis do body. A estrutura é a mesma, mas alguns campos mudam conforme o evento.
+
+### payment.completed
+
+```json
+{
+  "id": "whk_1",
+  "type": "payment.completed",
+  "createdAt": "2025-01-15T10:30:00Z",
+  "data": {
+    "id": "pay_1",
+    "externalId": "pedido-123",
+    "amount": 1000,
+    "fee": 15,
+    "netAmount": 985,
+    "currency": "BRL",
+    "method": "Pix",
+    "status": "Completed",
+    "environment": "Production",
+    "description": "Compra na Loja XYZ",
+    "completedAt": "2025-01-15T10:30:00Z",
+    "refundedAt": null,
+    "expiresAt": "2025-01-15T11:00:00Z",
+    "failureReason": null,
+    "customerId": "cust_1",
+    "pix": {
+      "txId": "SAFEFY2025011512345678901234",
+      "endToEndId": "E12345678202501151030ABC123",
+      "payerName": "Joao Silva",
+      "payerDocument": "***456789**",
+      "payerBank": "Banco do Brasil"
+    }
+  }
+}
+```
+
+### payment.expired
+
+```json
+{
+  "id": "whk_2",
+  "type": "payment.expired",
+  "createdAt": "2025-01-15T11:00:00Z",
+  "data": {
+    "id": "pay_2",
+    "externalId": "pedido-456",
+    "amount": 5000,
+    "fee": 75,
+    "netAmount": 4925,
+    "currency": "BRL",
+    "method": "Pix",
+    "status": "Expired",
+    "environment": "Production",
+    "description": "Pagamento expirado",
+    "completedAt": null,
+    "refundedAt": null,
+    "expiresAt": "2025-01-15T11:00:00Z",
+    "failureReason": "PIX expirado",
+    "customerId": null,
+    "pix": {
+      "txId": "SAFEFY2025011598765432101234",
+      "endToEndId": null,
+      "payerName": null,
+      "payerDocument": null,
+      "payerBank": null
+    }
+  }
+}
+```
+
+### payment.failed
+
+```json
+{
+  "id": "whk_3",
+  "type": "payment.failed",
+  "createdAt": "2025-01-15T11:05:00Z",
+  "data": {
+    "id": "pay_3",
+    "externalId": "pedido-789",
+    "amount": 2000,
+    "fee": 30,
+    "netAmount": 1970,
+    "currency": "BRL",
+    "method": "Pix",
+    "status": "Failed",
+    "environment": "Production",
+    "description": "Falha no pagamento",
+    "completedAt": null,
+    "refundedAt": null,
+    "expiresAt": "2025-01-15T11:10:00Z",
+    "failureReason": "Falha no processamento",
+    "customerId": null,
+    "pix": {
+      "txId": "SAFEFY2025011511111111111111",
+      "endToEndId": null,
+      "payerName": null,
+      "payerDocument": null,
+      "payerBank": null
+    }
+  }
+}
+```
+
+### payment.cancelled
+
+```json
+{
+  "id": "whk_4",
+  "type": "payment.cancelled",
+  "createdAt": "2025-01-15T11:06:00Z",
+  "data": {
+    "id": "pay_4",
+    "externalId": "pedido-999",
+    "amount": 3500,
+    "fee": 52,
+    "netAmount": 3448,
+    "currency": "BRL",
+    "method": "Pix",
+    "status": "Cancelled",
+    "environment": "Production",
+    "description": "Cancelado manualmente",
+    "completedAt": null,
+    "refundedAt": null,
+    "expiresAt": "2025-01-15T11:20:00Z",
+    "failureReason": "Pagamento cancelado",
+    "customerId": null,
+    "pix": {
+      "txId": "SAFEFY2025011512222222222222",
+      "endToEndId": null,
+      "payerName": null,
+      "payerDocument": null,
+      "payerBank": null
+    }
+  }
+}
+```
+
+### payment.refunded
+
+```json
+{
+  "id": "whk_5",
+  "type": "payment.refunded",
+  "createdAt": "2025-01-15T14:00:00Z",
+  "data": {
+    "id": "pay_5",
+    "externalId": "pedido-123",
+    "amount": 1000,
+    "fee": 15,
+    "netAmount": 985,
+    "currency": "BRL",
+    "method": "Pix",
+    "status": "Refunded",
+    "environment": "Production",
+    "description": "Pagamento estornado",
+    "completedAt": "2025-01-15T10:30:00Z",
+    "refundedAt": "2025-01-15T14:00:00Z",
+    "expiresAt": "2025-01-15T11:00:00Z",
+    "failureReason": null,
+    "customerId": "cust_1",
+    "pix": {
+      "txId": "SAFEFY2025011512345678901234",
+      "endToEndId": "E12345678202501151030ABC123",
+      "payerName": "Joao Silva",
+      "payerDocument": "***456789**",
+      "payerBank": "Banco do Brasil"
+    }
+  }
+}
+```
+
+### payment.partially_refunded
+
+```json
+{
+  "id": "whk_6",
+  "type": "payment.partially_refunded",
+  "createdAt": "2025-01-15T14:10:00Z",
+  "data": {
+    "id": "pay_6",
+    "externalId": "pedido-123",
+    "amount": 1000,
+    "fee": 15,
+    "netAmount": 985,
+    "currency": "BRL",
+    "method": "Pix",
+    "status": "PartiallyRefunded",
+    "environment": "Production",
+    "description": "Estorno parcial",
+    "completedAt": "2025-01-15T10:30:00Z",
+    "refundedAt": "2025-01-15T14:10:00Z",
+    "expiresAt": "2025-01-15T11:00:00Z",
+    "failureReason": null,
+    "customerId": "cust_1",
+    "pix": {
+      "txId": "SAFEFY2025011512345678901234",
+      "endToEndId": "E12345678202501151030ABC123",
+      "payerName": "Joao Silva",
+      "payerDocument": "***456789**",
+      "payerBank": "Banco do Brasil"
+    }
+  }
+}
+```
+
+### payment.refund_requested
+
+```json
+{
+  "id": "whk_7",
+  "type": "payment.refund_requested",
+  "createdAt": "2025-01-15T13:50:00Z",
+  "data": {
+    "id": "pay_7",
+    "externalId": "pedido-123",
+    "amount": 1000,
+    "fee": 15,
+    "netAmount": 985,
+    "currency": "BRL",
+    "method": "Pix",
+    "status": "Processing",
+    "environment": "Production",
+    "description": "Estorno solicitado",
+    "completedAt": "2025-01-15T10:30:00Z",
+    "refundedAt": null,
+    "expiresAt": "2025-01-15T11:00:00Z",
+    "failureReason": null,
+    "customerId": "cust_1",
+    "pix": {
+      "txId": "SAFEFY2025011512345678901234",
+      "endToEndId": "E12345678202501151030ABC123",
+      "payerName": "Joao Silva",
+      "payerDocument": "***456789**",
+      "payerBank": "Banco do Brasil"
+    }
+  }
+}
+```
+
+## O que fazer ao receber o webhook
+
+Para não perder o evento:
+
+1. Responda `200 OK` rapidamente.
+2. Salve o conteúdo no seu banco.
+3. Processe de forma assíncrona (fila ou job).
+4. Em caso de erro, a Safefy fará até 3 tentativas.

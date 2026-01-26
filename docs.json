@@ -58,6 +58,7 @@
 								"group": "Transações",
 								"pages": [
 									"api-reference/transactions/index",
+									"api-reference/transactions/webhooks",
 									"api-reference/transactions/create",
 									"api-reference/transactions/list",
 									"api-reference/transactions/get",
@@ -129,6 +130,7 @@
 								"pages": [
 									"api-reference/transactions/index",
 									"api-reference/transactions/create",
+									"api-reference/transactions/webhooks",
 									"api-reference/transactions/list",
 									"api-reference/transactions/get",
 									"api-reference/transactions/simulate"

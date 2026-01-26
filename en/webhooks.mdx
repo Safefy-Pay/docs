@@ -3,7 +3,7 @@ title: "Webhooks"
 description: "Receive real-time notifications about your payments"
 ---
 
-Webhooks allow your application to be notified automatically when something happens to your transactions.
+Webhooks allow your application to be notified automatically when something happens to your payments.
 
 ## How it works
 
@@ -16,30 +16,26 @@ sequenceDiagram
     participant App as Your Application
     
     Cliente->>Safefy: Pays with PIX
-    Safefy->>App: POST /webhook (transaction.completed)
+    Safefy->>App: POST /webhook (payment.completed)
     App-->>Safefy: 200 OK
     App->>App: Release product/service
 ```
+
+For the complete list of webhook bodies, see [Transaction webhooks](/api-reference/transactions/webhooks).
 
 ---
 
 ## Available events
 
-### Transaction events
-
 | Event | Description | When it happens |
 |--------|-----------|-----------------|
-| `transaction.completed` | Payment confirmed | When PIX is paid and confirmed by the bank |
-| `transaction.expired` | Transaction expired | When the payment window ends (default: 30 min) |
-| `transaction.failed` | Processing failed | When there is an acquirer or validation error |
-| `transaction.refunded` | Payment refunded | When a confirmed payment is refunded |
-
-### Cashout events
-
-| Event | Description | When it happens |
-|--------|-----------|-----------------|
-| `cashout.completed` | Cashout completed | When PIX is sent to the destination account |
-| `cashout.failed` | Cashout failed | When a cashout is rejected or fails |
+| `payment.completed` | Payment confirmed | When PIX is paid and confirmed by the bank |
+| `payment.expired` | Transaction expired | When the payment window ends |
+| `payment.failed` | Processing failed | When there is an acquirer or validation error |
+| `payment.cancelled` | Payment cancelled | When the payment is manually cancelled |
+| `payment.refunded` | Full refund | When a confirmed payment is refunded |
+| `payment.partially_refunded` | Partial refund | When part of the payment is refunded |
+| `payment.refund_requested` | Refund requested | When the refund is in processing |
 
 ---
 
@@ -54,7 +50,9 @@ stateDiagram-v2
     Pending --> Expired: Time expired
     Pending --> Failed: Processing error
     Pending --> Cancelled: Manually cancelled
-    Completed --> Refunded: Refund requested
+    Completed --> Refunded: Full refund
+    Completed --> PartiallyRefunded: Partial refund
+    Completed --> Processing: Refund requested
 ```
 
 ### Details for each status
@@ -73,7 +71,7 @@ stateDiagram-v2
     
     **What to do:** Release the product/service to the customer.
     
-    **Webhook:** `transaction.completed`
+    **Webhook:** `payment.completed`
     
     **Important fields in the webhook:**
     - `data.completedAt` - Confirmation date/time
@@ -88,7 +86,7 @@ stateDiagram-v2
     
     **What to do:** Inform the customer and offer a new attempt.
     
-    **Webhook:** `transaction.expired`
+    **Webhook:** `payment.expired`
   </Accordion>
   
   <Accordion title="Failed - Processing failed">
@@ -96,19 +94,9 @@ stateDiagram-v2
     
     **What to do:** Check the `failureReason` field and take the appropriate action.
     
-    **Webhook:** `transaction.failed`
+    **Webhook:** `payment.failed`
     
     **Important field:** `data.failureReason` - Failure reason
-  </Accordion>
-  
-  <Accordion title="Refunded - Payment refunded">
-    The confirmed payment was refunded. The amount was returned to the payer.
-    
-    **What to do:** Revoke access to the product/service.
-    
-    **Webhook:** `transaction.refunded`
-    
-    **Important field:** `data.refundedAt` - Refund date/time
   </Accordion>
   
   <Accordion title="Cancelled - Transaction cancelled">
@@ -116,7 +104,33 @@ stateDiagram-v2
     
     **What to do:** No action required.
     
-    **Webhook:** No webhook is sent for manual cancellations.
+    **Webhook:** `payment.cancelled`
+  </Accordion>
+  
+  <Accordion title="Refunded - Payment refunded">
+    The confirmed payment was refunded. The amount was returned to the payer.
+    
+    **What to do:** Revoke access to the product/service.
+    
+    **Webhook:** `payment.refunded`
+    
+    **Important field:** `data.refundedAt` - Refund date/time
+  </Accordion>
+
+  <Accordion title="PartiallyRefunded - Partial refund">
+    Part of the payment was refunded.
+    
+    **What to do:** Adjust access according to your refund policy.
+    
+    **Webhook:** `payment.partially_refunded`
+  </Accordion>
+
+  <Accordion title="Processing - Refund requested">
+    A refund was requested and is being processed.
+    
+    **What to do:** Wait for the final refund outcome.
+    
+    **Webhook:** `payment.refund_requested`
   </Accordion>
 </AccordionGroup>
 
@@ -124,145 +138,101 @@ stateDiagram-v2
 
 ## Example payloads
 
-### transaction.completed
-
-Sent when a PIX payment is confirmed:
+### payment.completed
 
 ```json
 {
   "id": "whk_550e8400-e29b-41d4-a716-446655440000",
-  "event": "transaction.completed",
-  "createdAt": "2024-01-15T10:30:00Z",
+  "type": "payment.completed",
+  "createdAt": "2025-01-15T10:30:00Z",
   "data": {
     "id": "550e8400-e29b-41d4-a716-446655440000",
     "externalId": "order-123",
     "amount": 1000,
     "fee": 15,
     "netAmount": 985,
-    "status": "Completed",
+    "currency": "BRL",
     "method": "Pix",
+    "status": "Completed",
+    "environment": "Production",
+    "description": "Purchase at Store XYZ",
+    "completedAt": "2025-01-15T10:30:00Z",
+    "refundedAt": null,
+    "expiresAt": "2025-01-15T11:00:00Z",
+    "failureReason": null,
+    "customerId": "550e8400-e29b-41d4-a716-446655440001",
     "pix": {
-      "txId": "SAFEFY2024011512345678901234",
-      "endToEndId": "E12345678202401151030ABC123",
+      "txId": "SAFEFY2025011512345678901234",
+      "endToEndId": "E12345678202501151030ABC123",
       "payerName": "Joao Silva",
       "payerDocument": "***456789**",
       "payerBank": "Banco do Brasil"
-    },
-    "completedAt": "2024-01-15T10:30:00Z"
+    }
   }
 }
 ```
 
-### transaction.expired
-
-Sent when the payment window expires:
+### payment.failed
 
 ```json
 {
   "id": "whk_661f9511-f3c8-52e5-b827-557766551111",
-  "event": "transaction.expired",
-  "createdAt": "2024-01-15T11:00:00Z",
+  "type": "payment.failed",
+  "createdAt": "2025-01-15T11:00:00Z",
   "data": {
     "id": "661f9511-f3c8-52e5-b827-557766551111",
     "externalId": "order-456",
     "amount": 5000,
     "fee": 75,
     "netAmount": 4925,
-    "status": "Expired",
+    "currency": "BRL",
     "method": "Pix",
+    "status": "Failed",
+    "environment": "Production",
+    "description": "Processing failed",
+    "completedAt": null,
+    "refundedAt": null,
+    "expiresAt": "2025-01-15T11:10:00Z",
+    "failureReason": "Processing failed",
+    "customerId": null,
     "pix": {
-      "txId": "SAFEFY2024011598765432101234",
+      "txId": "SAFEFY2025011598765432101234",
       "endToEndId": null,
       "payerName": null,
-      "payerDocument": null
-    },
-    "expiresAt": "2024-01-15T11:00:00Z"
-  }
-}
-```
-
-### transaction.refunded
-
-Sent when a payment is refunded:
-
-```json
-{
-  "id": "whk_772a0622-g4d9-63f6-c938-668877662222",
-  "event": "transaction.refunded",
-  "createdAt": "2024-01-15T14:00:00Z",
-  "data": {
-    "id": "550e8400-e29b-41d4-a716-446655440000",
-    "externalId": "order-123",
-    "amount": 1000,
-    "fee": 15,
-    "netAmount": 985,
-    "status": "Refunded",
-    "method": "Pix",
-    "pix": {
-      "txId": "SAFEFY2024011512345678901234",
-      "endToEndId": "E12345678202401151030ABC123",
-      "payerName": "Joao Silva",
-      "payerDocument": "***456789**"
-    },
-    "completedAt": "2024-01-15T10:30:00Z",
-    "refundedAt": "2024-01-15T14:00:00Z"
-  }
-}
-```
-
-### cashout.completed
-
-Sent when a cashout is processed successfully:
-
-```json
-{
-  "id": "whk_883b1733-h5e0-74g7-d049-779988773333",
-  "event": "cashout.completed",
-  "createdAt": "2024-01-15T16:00:00Z",
-  "data": {
-    "id": "b2c3d4e5-f6a7-8901-bcde-f23456789012",
-    "externalId": "cashout_001",
-    "amount": 50000,
-    "fee": 200,
-    "netAmount": 49800,
-    "status": "Completed",
-    "pix": {
-      "pixKeyType": "CPF",
-      "pixKey": "***456789**",
-      "endToEndId": "E12345678202401151600xyz789abc012"
-    },
-    "requestedAt": "2024-01-15T15:50:00Z",
-    "completedAt": "2024-01-15T16:00:00Z"
+      "payerDocument": null,
+      "payerBank": null
+    }
   }
 }
 ```
 
 ---
 
-## Sent headers
+## Headers sent
 
 | Header | Description |
 |--------|-----------|
 | `X-Safefy-Signature` | HMAC-SHA256 signature for validation |
-| `X-Safefy-Event` | Event type (transaction.completed, etc) |
+| `X-Safefy-Event` | Event type (payment.completed, etc) |
 | `X-Safefy-Delivery` | Unique delivery ID |
-| `X-Safefy-Attempt` | Attempt number (1, 2, 3...) |
+| `X-Safefy-Attempt` | Attempt number (1, 2, 3) |
 
 ---
 
 ## Validating the signature
 
-To ensure the webhook is from Safefy, validate the signature:
+To ensure the webhook came from Safefy, validate the signature using the `paymentId` as the secret.
 
-```javascript
-const crypto = require('crypto');
+<CodeGroup>
+```javascript JavaScript
+import crypto from 'crypto';
 
-function validateWebhook(payload, signature, secret) {
-  const expected = crypto
-    .createHmac('sha256', secret)
-    .update(JSON.stringify(payload))
+export function validateWebhook(rawBody, signature, paymentId) {
+  const expected = 'sha256=' + crypto
+    .createHmac('sha256', paymentId)
+    .update(rawBody)
     .digest('hex');
-  
+
   return crypto.timingSafeEqual(
     Buffer.from(signature),
     Buffer.from(expected)
@@ -270,23 +240,89 @@ function validateWebhook(payload, signature, secret) {
 }
 ```
 
+```typescript TypeScript
+import crypto from 'crypto';
+
+export function validateWebhook(
+  rawBody: string,
+  signature: string,
+  paymentId: string
+): boolean {
+  const expected = 'sha256=' + crypto
+    .createHmac('sha256', paymentId)
+    .update(rawBody)
+    .digest('hex');
+
+  return crypto.timingSafeEqual(
+    Buffer.from(signature),
+    Buffer.from(expected)
+  );
+}
+```
+
+```python Python
+import hmac
+import hashlib
+
+def validate_webhook(raw_body: str, signature: str, payment_id: str) -> bool:
+    expected = 'sha256=' + hmac.new(
+        payment_id.encode('utf-8'),
+        raw_body.encode('utf-8'),
+        hashlib.sha256
+    ).hexdigest()
+
+    return hmac.compare_digest(signature, expected)
+```
+
+```csharp C#
+using System.Security.Cryptography;
+using System.Text;
+
+public static bool ValidateWebhook(string rawBody, string signature, string paymentId)
+{
+    using var hmac = new HMACSHA256(Encoding.UTF8.GetBytes(paymentId));
+    var hash = hmac.ComputeHash(Encoding.UTF8.GetBytes(rawBody));
+    var expected = "sha256=" + Convert.ToHexString(hash).ToLower();
+    return CryptographicOperations.FixedTimeEquals(
+        Encoding.UTF8.GetBytes(signature),
+        Encoding.UTF8.GetBytes(expected)
+    );
+}
+```
+
+```go Go
+package webhooks
+
+import (
+  "crypto/hmac"
+  "crypto/sha256"
+  "encoding/hex"
+)
+
+func ValidateWebhook(rawBody, signature, paymentId string) bool {
+  mac := hmac.New(sha256.New, []byte(paymentId))
+  mac.Write([]byte(rawBody))
+  expected := "sha256=" + hex.EncodeToString(mac.Sum(nil))
+  return hmac.Equal([]byte(signature), []byte(expected))
+}
+```
+</CodeGroup>
+
 <Warning>
-Always validate the signature before processing the webhook to avoid spoofing attacks.
+Always validate the signature before processing the webhook.
 </Warning>
 
 ---
 
 ## Retries
 
-If your application does not respond with `2xx`, Safefy will retry:
+If your application does not respond with `2xx`, Safefy will retry up to 3 times:
 
 | Attempt | Interval |
-|-----------|-----------|
-| 1 | Immediately |
-| 2 | 1 minute |
-| 3 | 5 minutes |
-| 4 | 30 minutes |
-| 5 | 2 hours |
+|---------|----------|
+| 1 | Immediate |
+| 2 | 2 seconds |
+| 3 | 4 seconds |
 
 ---
 

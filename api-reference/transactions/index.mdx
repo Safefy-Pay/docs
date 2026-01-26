@@ -169,3 +169,7 @@ Pending → Processing → Completed
 | `GET` | `/v1/transactions` | [Listar transacoes](/api-reference/transactions/list) |
 | `GET` | `/v1/transactions/{id}` | [Buscar transacao](/api-reference/transactions/get) |
 | `POST` | `/v1/transactions/simulate` | [Simular pagamento (Sandbox)](/api-reference/transactions/simulate) |
+
+## Webhooks de transacao
+
+Quando voce informa `callbackUrl` na criacao, a Safefy envia webhooks de mudanca de status. Veja os detalhes em [Webhooks de transacao](/api-reference/transactions/webhooks).
