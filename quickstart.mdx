@@ -3,17 +3,17 @@ title: "Primeiros passos"
 description: "Integre a Safefy em poucos minutos"
 ---
 
-## Sua primeira cobranca PIX
+## Sua primeira cobrança PIX ou boleto
 
-Siga este guia para criar sua primeira cobranca PIX em poucos minutos.
+Siga este guia para criar sua primeira cobrança PIX ou boleto em poucos minutos.
 
 <Steps>
   <Step title="Obtenha suas credenciais">
     Acesse o [Painel Safefy](https://app.safefypay.com.br) e crie uma credencial de API.
     
-    Voce recebera:
-    - `clientId` - Identificador publico da sua aplicacao
-    - `clientSecret` - Chave secreta (exibida apenas uma vez, mantenha em seguranca!)
+    Você receberá:
+    - `clientId` - Identificador público da sua aplicação
+    - `clientSecret` - Chave secreta (exibida apenas uma vez, mantenha em segurança!)
   </Step>
   
   <Step title="Gere um token de acesso">
@@ -41,8 +41,8 @@ Siga este guia para criar sua primeira cobranca PIX em poucos minutos.
     ```
   </Step>
   
-  <Step title="Crie uma cobranca PIX">
-    Use o token para criar sua primeira cobranca:
+  <Step title="Crie uma cobrança PIX ou boleto">
+    Use o token para criar sua primeira cobrança:
 
     ```bash
     curl -X POST https://api-payment.safefypay.com.br/v1/transactions \
@@ -52,7 +52,24 @@ Siga este guia para criar sua primeira cobranca PIX em poucos minutos.
         "method": "pix",
         "amount": 1000,
         "currency": "BRL",
-        "description": "Minha primeira cobranca",
+        "description": "Minha primeira cobrança",
+        "callbackUrl": "https://seusite.com/webhook"
+      }'
+    ```
+
+    Para boleto, informe o cliente e a data de vencimento:
+
+    ```bash
+    curl -X POST https://api-payment.safefypay.com.br/v1/transactions \
+      -H "Authorization: Bearer {seu_token}" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "method": "boleto",
+        "amount": 1000,
+        "currency": "BRL",
+        "description": "Boleto de teste",
+        "customerId": "550e8400-e29b-41d4-a716-446655440000",
+        "boletoDueDate": "2024-12-31",
         "callbackUrl": "https://seusite.com/webhook"
       }'
     ```
@@ -74,7 +91,7 @@ Siga este guia para criar sua primeira cobranca PIX em poucos minutos.
   </Step>
   
   <Step title="Receba o pagamento">
-    Quando o pagamento for confirmado, voce recebera um webhook na URL configurada:
+    Quando o pagamento for confirmado, você receberá um webhook na URL configurada:
 
     ```json
     {
@@ -92,19 +109,19 @@ Siga este guia para criar sua primeira cobranca PIX em poucos minutos.
 
 ---
 
-## Proximos passos
+## Próximos passos
 
 <CardGroup cols={2}>
-  <Card title="Autenticacao" icon="key" href="/authentication">
-    Entenda como funciona a autenticacao OAuth2.
+  <Card title="Autenticação" icon="key" href="/authentication">
+    Entenda como funciona a autenticação OAuth2.
   </Card>
   <Card title="Webhooks" icon="bell" href="/webhooks">
-    Configure notificacoes em tempo real.
+    Configure notificações em tempo real.
   </Card>
   <Card title="Sandbox" icon="flask" href="/sandbox">
     Teste pagamentos em ambiente de desenvolvimento.
   </Card>
-  <Card title="Criar transacao" icon="code" href="/api-reference/transactions/create">
-    Veja a referencia completa do endpoint.
+  <Card title="Criar transação" icon="code" href="/api-reference/transactions/create">
+    Veja a referência completa do endpoint.
   </Card>
 </CardGroup>

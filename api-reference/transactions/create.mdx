@@ -1,48 +1,109 @@
 ---
-title: "Criar transacao"
-description: "Crie uma transacao PIX"
+title: "Criar transação"
+description: "Crie uma transação PIX ou boleto"
 openapi: "/api-reference/openapi.json POST /v1/transactions"
 ---
 
-Cria uma transacao PIX e retorna o codigo **Copia e Cola** para pagamento.
+Cria uma transação PIX ou boleto.
+
+- **PIX**: Apenas `method` e `amount` são obrigatórios. Retorna o código **Copia e Cola** para pagamento.
+- **Boleto**: Requer `method`, `amount` e `customerId` (cliente com nome e email cadastrados). Retorna código de barras, linha digitável e URL do PDF.
 
 <Info>
-A imagem do QR Code **nao e retornada** pela API. Voce deve gerar a imagem no seu frontend usando uma biblioteca de QR Code a partir do campo `copyAndPaste`.
+A imagem do QR Code **não é retornada** pela API. Você deve gerar a imagem no seu frontend usando uma biblioteca de QR Code a partir do campo `copyAndPaste`.
 </Info>
 
-## Parametros
+## Parâmetros
+
+<ParamField body="method" type="string" required>
+  Método de pagamento: `pix` ou `boleto`.
+</ParamField>
 
 <ParamField body="amount" type="integer" required>
-  Valor da transacao em centavos. Exemplo: R$ 150,00 = `15000`.
+  Valor da transação em centavos. Exemplo: R$ 150,00 = `15000`.
+</ParamField>
+
+<ParamField body="currency" type="string">
+  Moeda. Padrão: `BRL`.
 </ParamField>
 
 <ParamField body="description" type="string">
-  Descricao da transacao. Aparece no extrato do pagador.
+  Descrição da transação. Aparece no extrato do pagador.
 </ParamField>
 
 <ParamField body="externalId" type="string">
-  Identificador externo no seu sistema (ex: ID do pedido). Maximo 100 caracteres.
+  Identificador externo no seu sistema (ex: ID do pedido). Máximo 100 caracteres.
 </ParamField>
 
 <ParamField body="customerId" type="string">
-  ID do cliente associado a transacao (UUID).
+  ID do cliente associado à transação (UUID). **Obrigatório para boleto.** O cliente deve ter `name` e `email` cadastrados.
 </ParamField>
 
-<ParamField body="expiresInMinutes" type="integer">
-  Tempo de expiracao em minutos. Padrao: 30 minutos.
+<ParamField body="pixExpirationMinutes" type="integer">
+  Tempo de expiração em minutos (apenas PIX). Padrão: 30 minutos.
+</ParamField>
+
+<ParamField body="boletoDueDate" type="string">
+  Data de vencimento do boleto (formato `YYYY-MM-DD`). Opcional — se não informado, o vencimento será em 3 dias.
+</ParamField>
+
+<ParamField body="boletoInstructions" type="string">
+  Instruções do boleto. Opcional.
 </ParamField>
 
 <ParamField body="callbackUrl" type="string">
-  URL para receber webhooks sempre que o status do pagamento mudar. Veja [Webhooks de transacao](/api-reference/transactions/webhooks).
+  URL para receber webhooks sempre que o status do pagamento mudar. Veja [Webhooks de transação](/api-reference/transactions/webhooks).
 </ParamField>
 
 <ParamField body="metadata" type="string">
-  Dados adicionais em formato JSON string. Maximo 1000 caracteres.
+  Dados adicionais em formato JSON string. Máximo 1000 caracteres.
 </ParamField>
+
+## Campos obrigatórios por método
+
+| Campo | PIX | Boleto |
+|-------|-----|--------|
+| `method` | Obrigatório | Obrigatório |
+| `amount` | Obrigatório | Obrigatório |
+| `customerId` | Opcional | **Obrigatório** |
+| `description` | Opcional | Opcional |
+| `boletoDueDate` | N/A | Opcional (padrão: 3 dias) |
+| `callbackUrl` | Opcional | Opcional |
+
+<Warning>
+Para boleto, o cliente (`customerId`) deve ter **nome** e **email** cadastrados. Caso contrário, a transação será rejeitada.
+</Warning>
+
+## Valores gerados automaticamente
+
+Alguns campos opcionais são preenchidos automaticamente quando não informados. Isso acontece porque as instituições financeiras exigem esses dados para processar o pagamento, mas a Safefy gera valores válidos para simplificar sua integração.
+
+### PIX
+
+| Campo | O que acontece se não for enviado |
+|-------|--------------------------------------|
+| Nome do pagador | Preenchido como "Pagador" |
+| CPF do pagador | Um CPF válido e aleatório é gerado automaticamente |
+
+<Tip>
+Se você enviar um `customerId` com nome e documento cadastrados, esses dados serão utilizados no lugar dos valores automáticos.
+</Tip>
+
+### Boleto
+
+| Campo | O que acontece se não for enviado |
+|-------|--------------------------------------|
+| `boletoDueDate` | O vencimento é definido para **3 dias** após a criação |
+| CPF do cliente | Se o cliente não tiver documento cadastrado, um CPF válido e aleatório é gerado |
+| Endereço do cliente | Se o cliente não tiver endereço completo, um endereço brasileiro válido é gerado |
+
+<Info>
+Os valores gerados automaticamente (CPF e endereço) são tecnicamente válidos e servem apenas para que a instituição financeira aceite a transação. Eles não representam dados reais de nenhuma pessoa. Para garantir que os dados corretos apareçam no boleto, cadastre o cliente com todas as informações antes de criar a transação.
+</Info>
 
 ## Gerando o QR Code
 
-O campo `pix.copyAndPaste` contem o codigo EMV (BR Code) do PIX. Para exibir o QR Code visualmente, voce precisa gerar a imagem no seu frontend.
+O campo `pix.copyAndPaste` contém o código EMV (BR Code) do PIX. Para exibir o QR Code visualmente, você precisa gerar a imagem no seu frontend.
 
 ### JavaScript (usando qrcode.js)
 
@@ -66,7 +127,7 @@ function PaymentPage({ transaction }) {
   return (
     <div>
       <QRCode value={transaction.pix.copyAndPaste} size={256} />
-      <p>Ou copie o codigo:</p>
+      <p>Ou copie o código:</p>
       <code>{transaction.pix.copyAndPaste}</code>
     </div>
   );
@@ -91,5 +152,14 @@ function PaymentPage({ transaction }) {
 ```
 
 <Tip>
-O codigo `copyAndPaste` tambem pode ser copiado pelo usuario e colado diretamente no app do banco para efetuar o pagamento.
+O código `copyAndPaste` também pode ser copiado pelo usuário e colado diretamente no app do banco para efetuar o pagamento.
 </Tip>
+
+## Dados do boleto
+
+Quando `method` for `boleto`, a resposta inclui:
+
+- `boleto.barcode`
+- `boleto.digitableLine`
+- `boleto.pdfUrl`
+- `boleto.dueDate`

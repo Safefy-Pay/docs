@@ -180,7 +180,7 @@ O body sempre possui a mesma estrutura base. Alguns campos podem vir `null`, dep
 - `fee`: taxa cobrada pela Safefy em centavos
 - `netAmount`: valor líquido em centavos
 - `currency`: moeda (ex: `BRL`)
-- `method`: método (ex: `Pix`)
+- `method`: método (ex: `Pix`, `Boleto`)
 - `status`: status atual
 - `environment`: `Sandbox` ou `Production`
 - `description`: descrição da cobrança
@@ -190,6 +190,7 @@ O body sempre possui a mesma estrutura base. Alguns campos podem vir `null`, dep
 - `failureReason`: motivo da falha (quando houver)
 - `customerId`: ID do cliente associado (se houver)
 - `pix`: detalhes do PIX (pode ser `null`)
+- `boleto`: detalhes do boleto (pode ser `null`)
 
 ## Todos os corpos possíveis
 

@@ -6,26 +6,26 @@ openapi: "/api-reference/openapi.json PATCH /v1/customers/{id}"
 
 Atualiza os dados de um cliente existente. Envie apenas os campos que deseja alterar.
 
-## Parametros de Path
+## Parâmetros de Path
 
 <ParamField path="id" type="string" required>
   ID do cliente (UUID).
 </ParamField>
 
-## Parametros de Body
+## Parâmetros de Body
 
-Todos os campos sao opcionais. Envie apenas os que deseja atualizar.
+Todos os campos são opcionais. Envie apenas os que deseja atualizar.
 
 <ParamField body="name" type="string">
   Nome completo do cliente.
 </ParamField>
 
 <ParamField body="email" type="string">
-  Endereco de email do cliente.
+  Endereço de email do cliente.
 </ParamField>
 
 <ParamField body="document" type="string">
-  Numero do documento (CPF ou CNPJ).
+  Número do documento (CPF ou CNPJ).
 </ParamField>
 
 <ParamField body="documentType" type="string">

@@ -1,17 +1,18 @@
 ---
-title: "Buscar transacao"
-description: "Consulte uma transacao por ID"
+title: "Buscar transação"
+description: "Consulte uma transação por ID"
 openapi: "/api-reference/openapi.json GET /v1/transactions/{transactionId}"
 ---
 
-Retorna os dados completos de uma transacao especifica.
+Retorna os dados completos de uma transação específica.
 
-## Parametros de Path
+## Parâmetros de Path
 
 <ParamField path="transactionId" type="string" required>
-  ID da transacao (UUID).
+  ID da transação (UUID).
 </ParamField>
 
 <Note>
-Apos o pagamento, os campos `pix.payerName`, `pix.payerDocument`, `pix.payerBank` e `pix.endToEndId` sao preenchidos com os dados do pagador.
+Após o pagamento, os campos `pix.payerName`, `pix.payerDocument`, `pix.payerBank` e `pix.endToEndId` são preenchidos com os dados do pagador.
+Para boleto, os dados ficam em `boleto.barcode`, `boleto.digitableLine`, `boleto.pdfUrl` e `boleto.dueDate`.
 </Note>

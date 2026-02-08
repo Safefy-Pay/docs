@@ -1,13 +1,13 @@
 ---
 title: "Webhooks"
-description: "Receba notificacoes em tempo real sobre seus pagamentos"
+description: "Receba notificações em tempo real sobre seus pagamentos"
 ---
 
-Webhooks permitem que sua aplicacao seja notificada automaticamente quando algo acontece com seus pagamentos.
+Webhooks permitem que sua aplicação seja notificada automaticamente quando algo acontece com seus pagamentos.
 
 ## Como funciona
 
-Quando voce cria uma transacao com `callbackUrl`, a Safefy envia uma requisicao HTTP POST para essa URL sempre que o status mudar.
+Quando você cria uma transação com `callbackUrl`, a Safefy envia uma requisição HTTP POST para essa URL sempre que o status mudar.
 
 ```mermaid
 sequenceDiagram
@@ -25,27 +25,27 @@ Se quiser o detalhamento completo dos corpos de webhook, veja [Webhooks de trans
 
 ---
 
-## Eventos disponiveis
+## Eventos disponíveis
 
-| Evento | Descricao | Quando acontece |
+| Evento | Descrição | Quando acontece |
 |--------|-----------|-----------------|
-| `payment.completed` | Pagamento confirmado | Quando o PIX e pago e confirmado pelo banco |
-| `payment.expired` | Transacao expirou | Quando o prazo para pagamento esgota |
-| `payment.failed` | Falha no processamento | Quando ocorre erro na adquirente ou validacao |
-| `payment.cancelled` | Pagamento cancelado | Quando o pagamento e cancelado manualmente |
-| `payment.refunded` | Estorno total | Quando um pagamento confirmado e estornado |
-| `payment.partially_refunded` | Estorno parcial | Quando parte do pagamento e estornada |
+| `payment.completed` | Pagamento confirmado | Quando o PIX é pago e confirmado pelo banco |
+| `payment.expired` | Transação expirou | Quando o prazo para pagamento esgota |
+| `payment.failed` | Falha no processamento | Quando ocorre erro na adquirente ou validação |
+| `payment.cancelled` | Pagamento cancelado | Quando o pagamento é cancelado manualmente |
+| `payment.refunded` | Estorno total | Quando um pagamento confirmado é estornado |
+| `payment.partially_refunded` | Estorno parcial | Quando parte do pagamento é estornada |
 | `payment.refund_requested` | Estorno solicitado | Quando o estorno entra em processamento |
 
 ---
 
 ## Status das transacoes
 
-Entenda o ciclo de vida de uma transacao e quando cada webhook e disparado:
+Entenda o ciclo de vida de uma transação e quando cada webhook é disparado:
 
 ```mermaid
 stateDiagram-v2
-    [*] --> Pending: Transacao criada
+    [*] --> Pending: Transação criada
     Pending --> Completed: Pagamento confirmado
     Pending --> Expired: Tempo expirou
     Pending --> Failed: Erro no processamento
@@ -59,50 +59,50 @@ stateDiagram-v2
 
 <AccordionGroup>
   <Accordion title="Pending - Aguardando pagamento">
-    A transacao foi criada e esta aguardando o pagamento do cliente.
+    A transação foi criada e está aguardando o pagamento do cliente.
     
-    **O que fazer:** Exiba o QR Code/codigo PIX para o cliente e aguarde a confirmacao.
+    **O que fazer:** Exiba o QR Code/código PIX para o cliente e aguarde a confirmação.
     
-    **Webhook:** Nenhum webhook e enviado neste status.
+    **Webhook:** Nenhum webhook é enviado neste status.
   </Accordion>
   
   <Accordion title="Completed - Pagamento confirmado">
-    O pagamento foi recebido e confirmado pelo banco. O valor ja esta disponivel no seu saldo.
+    O pagamento foi recebido e confirmado pelo banco. O valor já está disponível no seu saldo.
     
-    **O que fazer:** Libere o produto/servico para o cliente.
+    **O que fazer:** Libere o produto/serviço para o cliente.
     
     **Webhook:** `payment.completed`
     
     **Campos importantes no webhook:**
-    - `data.completedAt` - Data/hora da confirmacao
-    - `data.pix.endToEndId` - ID unico da transacao no Banco Central
+    - `data.completedAt` - Data/hora da confirmação
+    - `data.pix.endToEndId` - ID único da transação no Banco Central
     - `data.pix.payerName` - Nome do pagador
     - `data.pix.payerDocument` - Documento do pagador (mascarado)
     - `data.pix.payerBank` - Banco do pagador
   </Accordion>
   
-  <Accordion title="Expired - Transacao expirada">
-    O tempo para pagamento expirou e a transacao foi automaticamente cancelada.
+  <Accordion title="Expired - Transação expirada">
+    O tempo para pagamento expirou e a transação foi automaticamente cancelada.
     
-    **O que fazer:** Informe o cliente que o tempo expirou e ofereca uma nova tentativa.
+    **O que fazer:** Informe o cliente que o tempo expirou e ofereça uma nova tentativa.
     
     **Webhook:** `payment.expired`
   </Accordion>
   
   <Accordion title="Failed - Falha no processamento">
-    Ocorreu um erro durante o processamento da transacao.
+    Ocorreu um erro durante o processamento da transação.
     
-    **O que fazer:** Verifique o campo `failureReason` e tome a acao apropriada.
+    **O que fazer:** Verifique o campo `failureReason` e tome a ação apropriada.
     
     **Webhook:** `payment.failed`
     
     **Campo importante:** `data.failureReason` - Motivo da falha
   </Accordion>
   
-  <Accordion title="Cancelled - Transacao cancelada">
-    A transacao foi cancelada manualmente antes do pagamento.
+  <Accordion title="Cancelled - Transação cancelada">
+    A transação foi cancelada manualmente antes do pagamento.
     
-    **O que fazer:** Nenhuma acao necessaria.
+    **O que fazer:** Nenhuma ação necessária.
     
     **Webhook:** `payment.cancelled`
   </Accordion>
@@ -110,7 +110,7 @@ stateDiagram-v2
   <Accordion title="Refunded - Pagamento estornado">
     O pagamento confirmado foi estornado. O valor foi devolvido ao pagador.
     
-    **O que fazer:** Revogue o acesso ao produto/servico.
+    **O que fazer:** Revogue o acesso ao produto/serviço.
     
     **Webhook:** `payment.refunded`
     
@@ -120,7 +120,7 @@ stateDiagram-v2
   <Accordion title="PartiallyRefunded - Estorno parcial">
     Parte do pagamento foi estornada.
     
-    **O que fazer:** Ajuste o acesso do cliente de acordo com a politica de estorno.
+    **O que fazer:** Ajuste o acesso do cliente de acordo com a política de estorno.
     
     **Webhook:** `payment.partially_refunded`
   </Accordion>
@@ -210,12 +210,12 @@ stateDiagram-v2
 
 ## Headers enviados
 
-| Header | Descricao |
+| Header | Descrição |
 |--------|-----------|
-| `X-Safefy-Signature` | Assinatura HMAC-SHA256 para validacao |
+| `X-Safefy-Signature` | Assinatura HMAC-SHA256 para validação |
 | `X-Safefy-Event` | Tipo do evento (payment.completed, etc) |
-| `X-Safefy-Delivery` | ID unico da entrega |
-| `X-Safefy-Attempt` | Numero da tentativa (1, 2, 3) |
+| `X-Safefy-Delivery` | ID único da entrega |
+| `X-Safefy-Attempt` | Número da tentativa (1, 2, 3) |
 
 ---
 
@@ -316,7 +316,7 @@ Sempre valide a assinatura antes de processar o webhook.
 
 ## Retries
 
-Se sua aplicacao nao responder com `2xx`, a Safefy tentara novamente ate 3 vezes:
+Se sua aplicação não responder com `2xx`, a Safefy tentará novamente até 3 vezes:
 
 | Tentativa | Intervalo |
 |-----------|-----------|
@@ -329,8 +329,8 @@ Se sua aplicacao nao responder com `2xx`, a Safefy tentara novamente ate 3 vezes
 ## Boas praticas
 
 <CardGroup cols={2}>
-  <Card title="Responda rapido" icon="bolt">
-    Retorne 200 OK imediatamente e processe o webhook de forma assincrona.
+  <Card title="Responda rápido" icon="bolt">
+    Retorne 200 OK imediatamente e processe o webhook de forma assíncrona.
   </Card>
   <Card title="Seja idempotente" icon="repeat">
     Use o id do webhook para evitar processar o mesmo evento duas vezes.
@@ -339,6 +339,6 @@ Se sua aplicacao nao responder com `2xx`, a Safefy tentara novamente ate 3 vezes
     Sempre verifique X-Safefy-Signature antes de confiar no payload.
   </Card>
   <Card title="Use HTTPS" icon="lock">
-    Configure sua callbackUrl apenas com HTTPS em producao.
+    Configure sua callbackUrl apenas com HTTPS em produção.
   </Card>
 </CardGroup>

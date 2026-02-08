@@ -1,31 +1,31 @@
 ---
-title: "Simular transacao"
-description: "Simule mudancas de status no Sandbox"
+title: "Simular transação"
+description: "Simule mudanças de status no Sandbox"
 openapi: "/api-reference/openapi.json POST /v1/transactions/{transactionId}/simulate"
 ---
 
-Simula acoes em uma transacao no ambiente Sandbox. Use para testar fluxos de pagamento sem dinheiro real.
+Simula ações em uma transação no ambiente Sandbox. Use para testar fluxos de pagamento sem dinheiro real.
 
 <Warning>
-Disponivel apenas no ambiente **Sandbox**.
+Disponível apenas no ambiente **Sandbox**.
 </Warning>
 
-## Parametros de Path
+## Parâmetros de Path
 
 <ParamField path="transactionId" type="string" required>
-  ID da transacao (UUID).
+  ID da transação (UUID).
 </ParamField>
 
-## Parametros de Body
+## Parâmetros de Body
 
 <ParamField body="action" type="string" required>
-  Acao a simular:
+  Ação a simular:
   - `pay` - Simula o pagamento (muda status para Completed)
-  - `expire` - Simula expiracao (muda status para Expired)
+  - `expire` - Simula expiração (muda status para Expired)
   - `fail` - Simula falha (muda status para Failed)
   - `refund` - Simula estorno (muda status para Refunded)
 </ParamField>
 
 <Note>
-A simulacao dispara webhooks normalmente, permitindo testar seu endpoint de callback.
+A simulação dispara webhooks normalmente, permitindo testar seu endpoint de callback.
 </Note>

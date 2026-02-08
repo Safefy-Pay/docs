@@ -1,12 +1,12 @@
 ---
 title: "Solicitar saque"
-description: "Solicite uma transferencia PIX para sua conta"
+description: "Solicite uma transferência PIX para sua conta"
 openapi: "/api-reference/openapi.json POST /v1/cashouts"
 ---
 
-Solicita uma transferencia de fundos da sua conta Safefy para uma conta bancaria via PIX.
+Solicita uma transferência de fundos da sua conta Safefy para uma conta bancária via PIX.
 
-## Parametros
+## Parâmetros
 
 <ParamField body="amount" type="integer" required>
   Valor do saque em centavos. Exemplo: R$ 500,00 = `50000`.
@@ -17,7 +17,7 @@ Solicita uma transferencia de fundos da sua conta Safefy para uma conta bancaria
 </ParamField>
 
 <ParamField body="pixKey" type="string" required>
-  Valor da chave PIX do destinatario.
+  Valor da chave PIX do destinatário.
 </ParamField>
 
 <ParamField body="externalId" type="string">
@@ -25,9 +25,9 @@ Solicita uma transferencia de fundos da sua conta Safefy para uma conta bancaria
 </ParamField>
 
 <ParamField body="description" type="string">
-  Descricao do saque.
+  Descrição do saque.
 </ParamField>
 
 <Warning>
-Certifique-se de ter saldo disponivel suficiente antes de solicitar um saque. O valor sera reservado imediatamente.
+Certifique-se de ter saldo disponível suficiente antes de solicitar um saque. O valor será reservado imediatamente.
 </Warning>

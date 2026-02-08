@@ -1,6 +1,6 @@
 ---
 title: "Erros e respostas"
-description: "Entenda o formato padrao das respostas da API"
+description: "Entenda o formato padrão das respostas da API"
 ---
 
 Todas as respostas da API Safefy seguem um formato consistente, facilitando o tratamento de sucesso e erro.
@@ -14,7 +14,7 @@ Todas as respostas da API Safefy seguem um formato consistente, facilitando o tr
     "status": "Pending",
     "amount": 1000
   },
-  "message": "Transacao criada com sucesso"
+  "message": "Transação criada com sucesso"
 }
 ```
 
@@ -32,34 +32,34 @@ Todas as respostas da API Safefy seguem um formato consistente, facilitando o tr
 
 ---
 
-## Codigos HTTP
+## Códigos HTTP
 
-| Codigo | Significado |
+| Código | Significado |
 |--------|-------------|
 | `200` | Sucesso |
 | `201` | Recurso criado |
-| `400` | Erro de validacao |
-| `401` | Nao autenticado |
-| `403` | Nao autorizado |
-| `404` | Recurso nao encontrado |
+| `400` | Erro de validação |
+| `401` | Não autenticado |
+| `403` | Não autorizado |
+| `404` | Recurso não encontrado |
 | `409` | Conflito (ex: externalId duplicado) |
 | `429` | Rate limit excedido |
 | `500` | Erro interno do servidor |
 
 ---
 
-## Codigos de erro
+## Códigos de erro
 
-| Codigo | Descricao |
+| Código | Descrição |
 |--------|-----------|
-| `VALIDATION_ERROR` | Campos invalidos ou ausentes |
-| `AUTHENTICATION_REQUIRED` | Token nao fornecido |
-| `INVALID_TOKEN` | Token invalido ou expirado |
-| `FORBIDDEN` | IP nao autorizado ou sem permissao |
-| `NOT_FOUND` | Recurso nao encontrado |
-| `DUPLICATE_EXTERNAL_ID` | externalId ja existe |
+| `VALIDATION_ERROR` | Campos inválidos ou ausentes |
+| `AUTHENTICATION_REQUIRED` | Token não fornecido |
+| `INVALID_TOKEN` | Token inválido ou expirado |
+| `FORBIDDEN` | IP não autorizado ou sem permissão |
+| `NOT_FOUND` | Recurso não encontrado |
+| `DUPLICATE_EXTERNAL_ID` | externalId já existe |
 | `INSUFFICIENT_BALANCE` | Saldo insuficiente para saque |
-| `RATE_LIMIT_EXCEEDED` | Muitas requisicoes |
+| `RATE_LIMIT_EXCEEDED` | Muitas requisições |
 | `INTERNAL_ERROR` | Erro interno |
 
 ---
@@ -83,7 +83,7 @@ try {
     // Trata o erro baseado no codigo
     switch (result.error.code) {
       case 'VALIDATION_ERROR':
-        console.error('Dados invalidos:', result.error.message);
+        console.error('Dados inválidos:', result.error.message);
         break;
       case 'INVALID_TOKEN':
         // Renova o token e tenta novamente
@@ -93,7 +93,7 @@ try {
     }
   } else {
     // Sucesso
-    console.log('Transacao criada:', result.data);
+    console.log('Transação criada:', result.data);
   }
 } catch (error) {
   console.error('Erro de rede:', error);
@@ -104,7 +104,7 @@ try {
 
 ## Rate limiting
 
-Quando voce excede o limite de requisicoes, a API retorna `429` com o header `Retry-After`:
+Quando você excede o limite de requisições, a API retorna `429` com o header `Retry-After`:
 
 ```http
 HTTP/1.1 429 Too Many Requests
@@ -114,7 +114,7 @@ Content-Type: application/json
 {
   "error": {
     "code": "RATE_LIMIT_EXCEEDED",
-    "message": "Limite de requisicoes excedido. Tente novamente em 60 segundos."
+    "message": "Limite de requisições excedido. Tente novamente em 60 segundos."
   }
 }
 ```

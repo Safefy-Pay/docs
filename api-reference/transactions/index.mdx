@@ -1,9 +1,9 @@
 ---
-title: "Objeto Transacao"
-description: "Estrutura e atributos do objeto Transacao na API Safefy"
+title: "Objeto Transação"
+description: "Estrutura e atributos do objeto Transação na API Safefy"
 ---
 
-O objeto Transacao representa uma cobranca ou pagamento processado pela Safefy. Atualmente, a API suporta transacoes via PIX, que geram um QR Code para pagamento instantaneo.
+O objeto Transação representa uma cobrança ou pagamento processado pela Safefy. A API suporta transações via PIX e boleto.
 
 ## Estrutura
 
@@ -41,20 +41,21 @@ O objeto Transacao representa uma cobranca ou pagamento processado pela Safefy. 
 ## Atributos
 
 <ParamField body="id" type="string" required>
-  Identificador unico da transacao no formato UUID v4. Gerado automaticamente pela API.
+  Identificador único da transação no formato UUID v4. Gerado automaticamente pela API.
 </ParamField>
 
 <ParamField body="externalId" type="string">
-  Identificador externo da transacao no seu sistema. Util para vincular a transacao da Safefy com pedidos ou registros do seu banco de dados.
+  Identificador externo da transação no seu sistema. Útil para vincular a transação da Safefy com pedidos ou registros do seu banco de dados.
 </ParamField>
 
 <ParamField body="method" type="string" required>
-  Metodo de pagamento utilizado. Valores possiveis:
-  - `Pix` - Pagamento instantaneo via PIX
+  Método de pagamento utilizado. Valores possíveis:
+  - `Pix` - Pagamento instantâneo via PIX
+  - `Boleto` - Pagamento via boleto bancário
 </ParamField>
 
 <ParamField body="amount" type="integer" required>
-  Valor total da transacao em centavos. Por exemplo, R$ 150,00 = `15000`.
+  Valor total da transação em centavos. Por exemplo, R$ 150,00 = `15000`.
 </ParamField>
 
 <ParamField body="fee" type="integer" required>
@@ -62,40 +63,40 @@ O objeto Transacao representa uma cobranca ou pagamento processado pela Safefy. 
 </ParamField>
 
 <ParamField body="netAmount" type="integer" required>
-  Valor liquido que sera creditado na sua conta em centavos. Calculado como `amount - fee`.
+  Valor líquido que será creditado na sua conta em centavos. Calculado como `amount - fee`.
 </ParamField>
 
 <ParamField body="currency" type="string" required>
-  Moeda da transacao. Atualmente apenas `BRL` (Real Brasileiro) e suportado.
+  Moeda da transação. Atualmente apenas `BRL` (Real Brasileiro) é suportado.
 </ParamField>
 
 <ParamField body="status" type="string" required>
-  Status atual da transacao. Valores possiveis:
+  Status atual da transação. Valores possíveis:
   - `Pending` - Aguardando pagamento
   - `Processing` - Pagamento sendo processado
   - `Completed` - Pagamento confirmado
   - `Failed` - Falha no pagamento
   - `Refunded` - Pagamento estornado
-  - `Expired` - Transacao expirada (nao foi paga no prazo)
-  - `Cancelled` - Transacao cancelada
+  - `Expired` - Transação expirada (não foi paga no prazo)
+  - `Cancelled` - Transação cancelada
 </ParamField>
 
 <ParamField body="description" type="string">
-  Descricao da transacao. Aparece no extrato do pagador.
+  Descrição da transação. Aparece no extrato do pagador.
 </ParamField>
 
 <ParamField body="environment" type="string" required>
-  Ambiente da transacao:
+  Ambiente da transação:
   - `Sandbox` - Ambiente de testes
-  - `Production` - Ambiente de producao
+  - `Production` - Ambiente de produção
 </ParamField>
 
 <ParamField body="customerId" type="string">
-  ID do cliente associado a transacao.
+  ID do cliente associado à transação.
 </ParamField>
 
 <ParamField body="customer" type="object">
-  Dados resumidos do cliente associado a transacao.
+  Dados resumidos do cliente associado à transação.
   
   <Expandable title="Atributos do cliente">
     <ParamField body="customer.id" type="string">
@@ -114,37 +115,56 @@ O objeto Transacao representa uma cobranca ou pagamento processado pela Safefy. 
 </ParamField>
 
 <ParamField body="pix" type="object">
-  Dados especificos do pagamento PIX. Presente apenas quando `method` e `Pix`.
+  Dados específicos do pagamento PIX. Presente apenas quando `method` é `Pix`.
   
   <Expandable title="Atributos do PIX">
     <ParamField body="pix.txId" type="string">
-      Identificador da transacao PIX no Banco Central.
+      Identificador da transação PIX no Banco Central.
     </ParamField>
     <ParamField body="pix.qrCode" type="string">
       Imagem do QR Code em formato base64 (data URI).
     </ParamField>
     <ParamField body="pix.copyAndPaste" type="string">
-      Codigo PIX Copia e Cola (EMV).
+      Código PIX Copia e Cola (EMV).
     </ParamField>
     <ParamField body="pix.expiresAt" type="string">
-      Data e hora de expiracao do QR Code no formato ISO 8601.
+      Data e hora de expiração do QR Code no formato ISO 8601.
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+<ParamField body="boleto" type="object">
+  Dados específicos do boleto. Presente apenas quando `method` é `Boleto`.
+  
+  <Expandable title="Atributos do boleto">
+    <ParamField body="boleto.barcode" type="string">
+      Código de barras do boleto.
+    </ParamField>
+    <ParamField body="boleto.digitableLine" type="string">
+      Linha digitável do boleto.
+    </ParamField>
+    <ParamField body="boleto.pdfUrl" type="string">
+      URL do PDF do boleto.
+    </ParamField>
+    <ParamField body="boleto.dueDate" type="string">
+      Data de vencimento do boleto no formato ISO 8601.
     </ParamField>
   </Expandable>
 </ParamField>
 
 <ParamField body="expiresAt" type="string">
-  Data e hora de expiracao da transacao no formato ISO 8601. Apos esse horario, a transacao muda para status `Expired` se nao for paga.
+  Data e hora de expiração da transação no formato ISO 8601. Após esse horário, a transação muda para status `Expired` se não for paga.
 </ParamField>
 
 <ParamField body="createdAt" type="string" required>
-  Data e hora de criacao da transacao no formato ISO 8601.
+  Data e hora de criação da transação no formato ISO 8601.
 </ParamField>
 
 <ParamField body="completedAt" type="string">
-  Data e hora em que o pagamento foi confirmado no formato ISO 8601. Nulo se ainda nao foi pago.
+  Data e hora em que o pagamento foi confirmado no formato ISO 8601. Nulo se ainda não foi pago.
 </ParamField>
 
-## Ciclo de Vida da Transacao
+## Ciclo de Vida da Transação
 
 ```
 Pending → Processing → Completed
@@ -154,22 +174,22 @@ Pending → Processing → Completed
           Refunded
 ```
 
-1. **Pending**: Transacao criada, aguardando pagamento
+1. **Pending**: Transação criada, aguardando pagamento
 2. **Processing**: Pagamento em processamento
 3. **Completed**: Pagamento confirmado com sucesso
-4. **Expired**: Nao foi paga antes do prazo de expiracao
+4. **Expired**: Não foi paga antes do prazo de expiração
 5. **Failed**: Falha no processamento do pagamento
 6. **Refunded**: Pagamento foi estornado
 
 ## Endpoints
 
-| Metodo | Endpoint | Descricao |
+| Método | Endpoint | Descrição |
 |--------|----------|-----------|
-| `POST` | `/v1/transactions` | [Criar transacao](/api-reference/transactions/create) |
-| `GET` | `/v1/transactions` | [Listar transacoes](/api-reference/transactions/list) |
-| `GET` | `/v1/transactions/{id}` | [Buscar transacao](/api-reference/transactions/get) |
+| `POST` | `/v1/transactions` | [Criar transação](/api-reference/transactions/create) |
+| `GET` | `/v1/transactions` | [Listar transações](/api-reference/transactions/list) |
+| `GET` | `/v1/transactions/{id}` | [Buscar transação](/api-reference/transactions/get) |
 | `POST` | `/v1/transactions/simulate` | [Simular pagamento (Sandbox)](/api-reference/transactions/simulate) |
 
 ## Webhooks de transacao
 
-Quando voce informa `callbackUrl` na criacao, a Safefy envia webhooks de mudanca de status. Veja os detalhes em [Webhooks de transacao](/api-reference/transactions/webhooks).
+Quando você informa `callbackUrl` na criação, a Safefy envia webhooks de mudança de status. Veja os detalhes em [Webhooks de transação](/api-reference/transactions/webhooks).

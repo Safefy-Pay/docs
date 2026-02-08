@@ -1,21 +1,21 @@
 ---
-title: "Autenticacao"
-description: "Como autenticar suas requisicoes na API Safefy"
+title: "Autenticação"
+description: "Como autenticar suas requisições na API Safefy"
 ---
 
-A Safefy utiliza **OAuth2 Client Credentials** para autenticacao. Voce precisa obter um token JWT antes de fazer qualquer outra requisicao.
+A Safefy utiliza **OAuth2 Client Credentials** para autenticação. Você precisa obter um token JWT antes de fazer qualquer outra requisição.
 
 ## Como funciona
 
 ```mermaid
 sequenceDiagram
-    participant App as Sua Aplicacao
+    participant App as Sua Aplicação
     participant Safefy as API Safefy
     
     App->>Safefy: POST /v1/auth/token (credenciais)
     Safefy-->>App: Token JWT (expira em 1h)
     App->>Safefy: GET /v1/transactions (Authorization: Bearer token)
-    Safefy-->>App: Dados da transacao
+    Safefy-->>App: Dados da transação
 ```
 
 ## Obtendo o token
@@ -45,7 +45,7 @@ curl -X POST https://api-payment.safefypay.com.br/v1/auth/token \
 
 ## Usando o token
 
-Inclua o token no header `Authorization` de todas as requisicoes:
+Inclua o token no header `Authorization` de todas as requisições:
 
 ```bash
 curl https://api-payment.safefypay.com.br/v1/transactions \
@@ -53,19 +53,19 @@ curl https://api-payment.safefypay.com.br/v1/transactions \
 ```
 
 <Warning>
-O token expira em **1 hora** (3600 segundos). Renove-o antes da expiracao para evitar interrupcoes.
+O token expira em **1 hora** (3600 segundos). Renove-o antes da expiração para evitar interrupções.
 </Warning>
 
 ---
 
-## Boas praticas de seguranca
+## Boas práticas de segurança
 
 <CardGroup cols={2}>
   <Card title="Nunca exponha a secretKey" icon="shield">
-    Mantenha a secretKey apenas no backend. Nunca a inclua em codigo frontend ou repositorios publicos.
+    Mantenha a secretKey apenas no backend. Nunca a inclua em código frontend ou repositórios públicos.
   </Card>
-  <Card title="Use variaveis de ambiente" icon="lock">
-    Armazene suas credenciais em variaveis de ambiente ou servicos de secrets (AWS Secrets Manager, Vault, etc).
+  <Card title="Use variáveis de ambiente" icon="lock">
+    Armazene suas credenciais em variáveis de ambiente ou serviços de secrets (AWS Secrets Manager, Vault, etc).
   </Card>
   <Card title="Renove antes de expirar" icon="rotate">
     Implemente logica para renovar o token antes dos 3600 segundos expirarem.
@@ -79,12 +79,12 @@ O token expira em **1 hora** (3600 segundos). Renove-o antes da expiracao para e
 
 ## Erros comuns
 
-| Codigo | Erro | Solucao |
+| Codigo | Erro | Solução |
 |--------|------|---------|
-| 401 | Credenciais invalidas | Verifique publicKey e secretKey |
-| 403 | IP nao autorizado | Adicione o IP nas configuracoes da credencial |
+| 401 | Credenciais inválidas | Verifique publicKey e secretKey |
+| 403 | IP não autorizado | Adicione o IP nas configurações da credencial |
 | 429 | Rate limit excedido | Aguarde o tempo indicado em Retry-After |
 
 <Card title="Testar autenticacao" icon="play" href="/api-reference/auth/token">
-  Experimente o endpoint de autenticacao no playground.
+  Experimente o endpoint de autenticação no playground.
 </Card>

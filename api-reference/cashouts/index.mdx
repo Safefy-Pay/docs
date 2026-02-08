@@ -3,7 +3,7 @@ title: "Objeto Saque"
 description: "Estrutura e atributos do objeto Saque na API Safefy"
 ---
 
-O objeto Saque (Cashout ou Payout) representa uma transferencia de fundos da sua conta Safefy para uma conta bancaria externa via PIX. Os saques sao processados utilizando chaves PIX.
+O objeto Saque (Cashout ou Payout) representa uma transferência de fundos da sua conta Safefy para uma conta bancária externa via PIX. Os saques são processados utilizando chaves PIX.
 
 ## Estrutura
 
@@ -33,11 +33,11 @@ O objeto Saque (Cashout ou Payout) representa uma transferencia de fundos da sua
 ## Atributos
 
 <ParamField body="id" type="string" required>
-  Identificador unico do saque no formato UUID v4. Gerado automaticamente pela API.
+  Identificador único do saque no formato UUID v4. Gerado automaticamente pela API.
 </ParamField>
 
 <ParamField body="externalId" type="string">
-  Identificador externo do saque no seu sistema. Util para vincular o saque da Safefy com registros do seu banco de dados.
+  Identificador externo do saque no seu sistema. Útil para vincular o saque da Safefy com registros do seu banco de dados.
 </ParamField>
 
 <ParamField body="amount" type="integer" required>
@@ -49,46 +49,46 @@ O objeto Saque (Cashout ou Payout) representa uma transferencia de fundos da sua
 </ParamField>
 
 <ParamField body="netAmount" type="integer" required>
-  Valor liquido transferido para a conta de destino em centavos. Calculado como `amount - fee`.
+  Valor líquido transferido para a conta de destino em centavos. Calculado como `amount - fee`.
 </ParamField>
 
 <ParamField body="currency" type="string" required>
-  Moeda do saque. Atualmente apenas `BRL` (Real Brasileiro) e suportado.
+  Moeda do saque. Atualmente apenas `BRL` (Real Brasileiro) é suportado.
 </ParamField>
 
 <ParamField body="status" type="string" required>
-  Status atual do saque. Valores possiveis:
+  Status atual do saque. Valores possíveis:
   - `Pending` - Saque solicitado, aguardando processamento
   - `Processing` - Saque sendo processado
-  - `Completed` - Saque concluido com sucesso
+  - `Completed` - Saque concluído com sucesso
   - `Failed` - Falha no processamento do saque
-  - `Rejected` - Saque rejeitado (dados invalidos, etc)
-  - `Cancelled` - Saque cancelado pelo usuario
+  - `Rejected` - Saque rejeitado (dados inválidos, etc)
+  - `Cancelled` - Saque cancelado pelo usuário
 </ParamField>
 
 <ParamField body="environment" type="string" required>
   Ambiente do saque:
   - `Sandbox` - Ambiente de testes
-  - `Production` - Ambiente de producao
+  - `Production` - Ambiente de produção
 </ParamField>
 
 <ParamField body="pix" type="object" required>
-  Dados da transferencia PIX.
+  Dados da transferência PIX.
   
   <Expandable title="Atributos do PIX">
     <ParamField body="pix.pixKeyType" type="string" required>
-      Tipo da chave PIX. Valores possiveis:
-      - `CPF` - CPF do destinatario
-      - `CNPJ` - CNPJ do destinatario
+      Tipo da chave PIX. Valores possíveis:
+      - `CPF` - CPF do destinatário
+      - `CNPJ` - CNPJ do destinatário
       - `Email` - Email cadastrado como chave PIX
       - `Phone` - Telefone cadastrado como chave PIX
-      - `Random` - Chave aleatoria
+      - `Random` - Chave aleatória
     </ParamField>
     <ParamField body="pix.pixKey" type="string" required>
-      Valor da chave PIX do destinatario.
+      Valor da chave PIX do destinatário.
     </ParamField>
     <ParamField body="pix.endToEndId" type="string">
-      Identificador fim-a-fim da transacao PIX no Banco Central. Preenchido apos o processamento.
+      Identificador fim-a-fim da transação PIX no Banco Central. Preenchido após o processamento.
     </ParamField>
   </Expandable>
 </ParamField>
@@ -98,19 +98,19 @@ O objeto Saque (Cashout ou Payout) representa uma transferencia de fundos da sua
 </ParamField>
 
 <ParamField body="processedAt" type="string">
-  Data e hora em que o saque comecou a ser processado no formato ISO 8601.
+  Data e hora em que o saque começou a ser processado no formato ISO 8601.
 </ParamField>
 
 <ParamField body="completedAt" type="string">
-  Data e hora em que o saque foi concluido no formato ISO 8601.
+  Data e hora em que o saque foi concluído no formato ISO 8601.
 </ParamField>
 
 <ParamField body="failureReason" type="string">
-  Motivo da falha ou rejeicao do saque. Preenchido apenas quando `status` e `Failed` ou `Rejected`.
+  Motivo da falha ou rejeição do saque. Preenchido apenas quando `status` é `Failed` ou `Rejected`.
 </ParamField>
 
 <ParamField body="createdAt" type="string" required>
-  Data e hora de criacao do registro no formato ISO 8601.
+  Data e hora de criação do registro no formato ISO 8601.
 </ParamField>
 
 ## Ciclo de Vida do Saque
@@ -125,24 +125,24 @@ Cancelled  Failed
 
 1. **Pending**: Saque solicitado, aguardando processamento
 2. **Processing**: Saque em andamento
-3. **Completed**: Transferencia concluida com sucesso
+3. **Completed**: Transferência concluída com sucesso
 4. **Cancelled**: Cancelado antes de iniciar o processamento
 5. **Failed**: Falha durante o processamento
-6. **Rejected**: Rejeitado (chave PIX invalida, conta inexistente, etc)
+6. **Rejected**: Rejeitado (chave PIX inválida, conta inexistente, etc)
 
 ## Tipos de Chave PIX
 
 | Tipo | Formato | Exemplo |
 |------|---------|---------|
-| `CPF` | 11 digitos numericos | `12345678901` |
-| `CNPJ` | 14 digitos numericos | `12345678000199` |
-| `Email` | Email valido | `exemplo@email.com` |
-| `Phone` | +55 + DDD + numero | `+5511999999999` |
-| `Random` | 32 caracteres alfanumericos | `a1b2c3d4-e5f6-g7h8-i9j0-k1l2m3n4o5p6` |
+| `CPF` | 11 dígitos numéricos | `12345678901` |
+| `CNPJ` | 14 dígitos numéricos | `12345678000199` |
+| `Email` | Email válido | `exemplo@email.com` |
+| `Phone` | +55 + DDD + número | `+5511999999999` |
+| `Random` | 32 caracteres alfanuméricos | `a1b2c3d4-e5f6-g7h8-i9j0-k1l2m3n4o5p6` |
 
 ## Endpoints
 
-| Metodo | Endpoint | Descricao |
+| Método | Endpoint | Descrição |
 |--------|----------|-----------|
 | `POST` | `/v1/cashouts` | [Criar saque](/api-reference/cashouts/create) |
 | `GET` | `/v1/cashouts` | [Listar saques](/api-reference/cashouts/list) |

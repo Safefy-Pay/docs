@@ -1,23 +1,23 @@
 ---
-title: "Listar transacoes"
-description: "Liste e filtre transacoes"
+title: "Listar transações"
+description: "Liste e filtre transações"
 openapi: "/api-reference/openapi.json GET /v1/transactions"
 ---
 
-Retorna uma lista paginada de transacoes com opcoes de filtragem.
+Retorna uma lista paginada de transações com opções de filtragem.
 
-## Parametros de Query
+## Parâmetros de Query
 
 <ParamField query="page" type="integer">
-  Numero da pagina. Padrao: 1.
+  Número da página. Padrão: 1.
 </ParamField>
 
 <ParamField query="pageSize" type="integer">
-  Quantidade de itens por pagina. Padrao: 20. Maximo: 100.
+  Quantidade de itens por página. Padrão: 20. Máximo: 100.
 </ParamField>
 
 <ParamField query="method" type="string">
-  Filtrar por metodo de pagamento: `Pix`.
+  Filtrar por método de pagamento: `Pix` ou `Boleto`.
 </ParamField>
 
 <ParamField query="status" type="string">

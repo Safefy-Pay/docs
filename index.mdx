@@ -1,53 +1,53 @@
 ---
 title: "Comece aqui"
-description: "Tudo o que voce precisa saber para integrar com a Safefy"
+description: "Tudo o que você precisa saber para integrar com a Safefy"
 ---
 
-## O que e a Safefy?
+## O que é a Safefy?
 
-Integrar com pagamentos pode ser complicado: documentacoes confusas, SDKs pesados, respostas inconsistentes. A **Safefy** nasceu para resolver isso.
+Integrar com pagamentos pode ser complicado: documentações confusas, SDKs pesados, respostas inconsistentes. A **Safefy** nasceu para resolver isso.
 
 Somos uma plataforma de pagamentos focada em **PIX** que oferece:
 
-- **PIX** como metodo de pagamento rapido, seguro e em conformidade com as melhores praticas
+- **PIX** como método de pagamento rápido, seguro e em conformidade com as melhores práticas
 - Interface completa e intuitiva para gestao financeira
 - Suporte exclusivo e eficiente
 
 <CardGroup cols={2}>
   <Card title="Primeiros passos" icon="rocket" href="/quickstart">
-    Crie credenciais, gere o token e realize sua primeira transacao.
+    Crie credenciais, gere o token e realize sua primeira transação.
   </Card>
-  <Card title="Referencia da API" icon="code" href="/api-reference/auth/token">
-    Explore todos os endpoints disponiveis.
+  <Card title="Referência da API" icon="code" href="/api-reference/auth/token">
+    Explore todos os endpoints disponíveis.
   </Card>
 </CardGroup>
 
 ---
 
-## Estrutura de Organizacoes
+## Estrutura de Organizações
 
-Na Safefy, um **usuario** pode criar e gerenciar **multiplas organizacoes**. Cada organizacao representa um CNPJ ou negocio diferente.
+Na Safefy, um **usuário** pode criar e gerenciar **múltiplas organizações**. Cada organização representa um CNPJ ou negócio diferente.
 
 **Como funciona:**
 
-- Cada organizacao possui seu proprio **saldo**, **transacoes**, **clientes** e **credenciais de API**
-- Os dados sao completamente **isolados** entre organizacoes
-- Um usuario pode alternar entre organizacoes no painel
-- As credenciais de API sao vinculadas a uma organizacao especifica
+- Cada organização possui seu próprio **saldo**, **transações**, **clientes** e **credenciais de API**
+- Os dados são completamente **isolados** entre organizações
+- Um usuário pode alternar entre organizações no painel
+- As credenciais de API são vinculadas a uma organização específica
 
 <Info>
-Ao criar uma credencial de API, ela pertence a organizacao selecionada no momento. Todas as transacoes realizadas com essa credencial serao registradas naquela organizacao.
+Ao criar uma credencial de API, ela pertence à organização selecionada no momento. Todas as transações realizadas com essa credencial serão registradas naquela organização.
 </Info>
 
 ---
 
 ## API descomplicada
 
-Nossa API foi construida seguindo tres principios:
+Nossa API foi construída seguindo três princípios:
 
-### 1. Baseada em intencao
+### 1. Baseada em intenção
 
-Voce diz **o que quer fazer**, e nos cuidamos do resto. Para criar uma cobranca PIX:
+Você diz **o que quer fazer**, e nós cuidamos do resto. Para criar uma cobrança PIX:
 
 ```bash
 curl -X POST https://api-payment.safefypay.com.br/v1/transactions \
@@ -63,7 +63,7 @@ curl -X POST https://api-payment.safefypay.com.br/v1/transactions \
 
 ### 2. Idempotente
 
-Use o campo `externalId` para garantir que uma requisicao duplicada nao crie recursos duplicados. Se voce enviar duas vezes com o mesmo `externalId`, a segunda sera ignorada.
+Use o campo `externalId` para garantir que uma requisição duplicada não crie recursos duplicados. Se você enviar duas vezes com o mesmo `externalId`, a segunda será ignorada.
 
 ```json
 {
@@ -76,7 +76,7 @@ Use o campo `externalId` para garantir que uma requisicao duplicada nao crie rec
 
 ### 3. Consistente
 
-Todas as respostas seguem o mesmo padrao, seja sucesso ou erro:
+Todas as respostas seguem o mesmo padrão, seja sucesso ou erro:
 
 ```json
 // Sucesso
@@ -86,7 +86,7 @@ Todas as respostas seguem o mesmo padrao, seja sucesso ou erro:
     "status": "Pending",
     "amount": 1000
   },
-  "message": "Transacao criada com sucesso"
+  "message": "Transação criada com sucesso"
 }
 ```
 
@@ -96,7 +96,7 @@ Todas as respostas seguem o mesmo padrao, seja sucesso ou erro:
   "data": null,
   "error": {
     "code": "VALIDATION_ERROR",
-    "message": "O campo 'amount' e obrigatorio"
+    "message": "O campo 'amount' é obrigatório"
   }
 }
 ```
@@ -105,7 +105,7 @@ Todas as respostas seguem o mesmo padrao, seja sucesso ou erro:
 
 ## Valores monetarios
 
-Todos os valores sao enviados em **centavos** (menor unidade da moeda).
+Todos os valores são enviados em **centavos** (menor unidade da moeda).
 
 | Valor Real | Valor na API |
 |------------|--------------|
@@ -117,24 +117,24 @@ Todos os valores sao enviados em **centavos** (menor unidade da moeda).
 
 ## Ambientes
 
-O ambiente (Sandbox ou Production) e determinado pela **credencial de API** utilizada. Nao existe URL separada para cada ambiente.
+O ambiente (Sandbox ou Production) é determinado pela **credencial de API** utilizada. Não existe URL separada para cada ambiente.
 
-| Ambiente | Descricao |
+| Ambiente | Descrição |
 |----------|-----------|
-| **Sandbox** | Credenciais de sandbox permitem testes e simulacoes. Nenhum dinheiro real e movimentado. |
-| **Production** | Credenciais de producao processam transacoes reais via PIX. |
+| **Sandbox** | Credenciais de sandbox permitem testes e simulações. Nenhum dinheiro real é movimentado. |
+| **Production** | Credenciais de produção processam transações reais via PIX. |
 
 **URL da API:** `https://api-payment.safefypay.com.br`
 
 <Note>
-Para testar, crie uma credencial de **Sandbox** no painel. Para ir para producao, crie uma credencial de **Production** na mesma organizacao.
+Para testar, crie uma credencial de **Sandbox** no painel. Para ir para produção, crie uma credencial de **Production** na mesma organização.
 </Note>
 
 ---
 
-## Duvidas?
+## Dúvidas?
 
-Estamos sempre disponiveis para ajudar na sua integracao:
+Estamos sempre disponíveis para ajudar na sua integração:
 
 **suporte@safefypay.com.br**
 

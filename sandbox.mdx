@@ -1,43 +1,43 @@
 ---
 title: "Sandbox"
-description: "Teste sua integracao sem pagamentos reais"
+description: "Teste sua integração sem pagamentos reais"
 ---
 
-O ambiente **Sandbox** permite testar todo o fluxo de pagamentos sem precisar fazer transacoes reais.
+O ambiente **Sandbox** permite testar todo o fluxo de pagamentos sem precisar fazer transações reais.
 
 ## Como funciona
 
-Na Safefy, **nao existe URL separada** para Sandbox e Production. O ambiente e determinado pelo tipo de **credencial de API** que voce utiliza.
+Na Safefy, **não existe URL separada** para Sandbox e Production. O ambiente é determinado pelo tipo de **credencial de API** que você utiliza.
 
 | Tipo de Credencial | Ambiente | Comportamento |
 |-------------------|----------|---------------|
-| **Sandbox** | Testes | Pagamentos simulados, saldo ficticio |
-| **Production** | Real | Transacoes PIX reais |
+| **Sandbox** | Testes | Pagamentos simulados, saldo fictício |
+| **Production** | Real | Transações PIX reais |
 
 **URL da API:** `https://api-payment.safefypay.com.br`
 
 <Info>
-A mesma URL e usada para ambos os ambientes. O que muda e a credencial utilizada na autenticacao.
+A mesma URL é usada para ambos os ambientes. O que muda é a credencial utilizada na autenticação.
 </Info>
 
 ---
 
 ## Criando credenciais
 
-No painel da Safefy, voce pode criar credenciais para cada ambiente:
+No painel da Safefy, você pode criar credenciais para cada ambiente:
 
 <Steps>
   <Step title="Acesse o painel">
-    Entre em [app.safefypay.com.br](https://app.safefypay.com.br) e selecione sua organizacao.
+    Entre em [app.safefypay.com.br](https://app.safefypay.com.br) e selecione sua organização.
   </Step>
-  <Step title="Va ate Credenciais">
-    No menu lateral, acesse a secao de credenciais de API.
+  <Step title="Vá até Credenciais">
+    No menu lateral, acesse a seção de credenciais de API.
   </Step>
   <Step title="Crie a credencial">
-    Escolha o tipo **Sandbox** para testes ou **Production** para transacoes reais.
+    Escolha o tipo **Sandbox** para testes ou **Production** para transações reais.
   </Step>
   <Step title="Guarde o Client Secret">
-    O Client Secret e exibido apenas uma vez. Guarde-o em local seguro.
+    O Client Secret é exibido apenas uma vez. Guarde-o em local seguro.
   </Step>
 </Steps>
 
@@ -45,7 +45,7 @@ No painel da Safefy, voce pode criar credenciais para cada ambiente:
 
 ## Simulando pagamentos
 
-Em Sandbox, voce pode simular diferentes status de transacao usando o endpoint de simulacao:
+Em Sandbox, você pode simular diferentes status de transação usando o endpoint de simulação:
 
 ```bash
 curl -X POST https://api-payment.safefypay.com.br/v1/transactions/{id}/simulate \
@@ -54,17 +54,17 @@ curl -X POST https://api-payment.safefypay.com.br/v1/transactions/{id}/simulate 
   -d '{ "action": "complete" }'
 ```
 
-### Acoes disponiveis
+### Ações disponíveis
 
-| Acao | Status atual | Novo status | Descricao |
+| Ação | Status atual | Novo status | Descrição |
 |------|--------------|-------------|-----------|
 | `complete` | `Pending` | `Completed` | Simula pagamento confirmado |
-| `expire` | `Pending` | `Expired` | Simula expiracao |
+| `expire` | `Pending` | `Expired` | Simula expiração |
 | `fail` | `Pending` | `Failed` | Simula falha |
 | `refund` | `Completed` | `Refunded` | Simula estorno |
 
 <Warning>
-O endpoint de simulacao so funciona com credenciais **Sandbox**. Em Production, os pagamentos sao processados automaticamente pelo sistema PIX.
+O endpoint de simulação só funciona com credenciais **Sandbox**. Em Production, os pagamentos são processados automaticamente pelo sistema PIX.
 </Warning>
 
 ---
@@ -72,8 +72,8 @@ O endpoint de simulacao so funciona com credenciais **Sandbox**. Em Production, 
 ## Fluxo de teste completo
 
 <Steps>
-  <Step title="Crie uma transacao">
-    Use credenciais Sandbox para criar uma transacao PIX.
+  <Step title="Crie uma transação">
+    Use credenciais Sandbox para criar uma transação PIX.
   </Step>
   <Step title="Exiba o QR Code">
     Mostre o qrCode ou copyAndPaste na sua interface.
@@ -82,10 +82,10 @@ O endpoint de simulacao so funciona com credenciais **Sandbox**. Em Production, 
     Use o endpoint /simulate com action: complete.
   </Step>
   <Step title="Receba o webhook">
-    Sua callbackUrl recebera o evento transaction.completed.
+    Sua callbackUrl receberá o evento transaction.completed.
   </Step>
   <Step title="Valide o fluxo">
-    Verifique se sua aplicacao liberou o produto/servico corretamente.
+    Verifique se sua aplicação liberou o produto/serviço corretamente.
   </Step>
 </Steps>
 
@@ -93,7 +93,7 @@ O endpoint de simulacao so funciona com credenciais **Sandbox**. Em Production, 
 
 ## Simulando saques
 
-Voce tambem pode simular o processamento de saques:
+Você também pode simular o processamento de saques:
 
 ```bash
 curl -X POST https://api-payment.safefypay.com.br/v1/cashouts/{id}/simulate \
@@ -102,21 +102,21 @@ curl -X POST https://api-payment.safefypay.com.br/v1/cashouts/{id}/simulate \
   -d '{ "action": "Complete" }'
 ```
 
-| Acao | Descricao |
+| Ação | Descrição |
 |------|-----------|
-| `Complete` | Simula saque concluido |
+| `Complete` | Simula saque concluído |
 | `Fail` | Simula falha no saque |
-| `Reject` | Simula rejeicao do saque |
+| `Reject` | Simula rejeição do saque |
 
 ---
 
 ## Dados de teste
 
-Em Sandbox, voce pode usar qualquer dado valido para criar transacoes e clientes:
+Em Sandbox, você pode usar qualquer dado válido para criar transações e clientes:
 
 ```json
 {
-  "name": "Joao da Silva Teste",
+  "name": "João da Silva Teste",
   "email": "joao@teste.com",
   "document": "12345678901",
   "documentType": "CPF"
@@ -127,7 +127,7 @@ Em Sandbox, voce pode usar qualquer dado valido para criar transacoes e clientes
 
 ## Indo para Production
 
-Quando sua integracao estiver pronta:
+Quando sua integração estiver pronta:
 
 1. Crie uma credencial de **Production** no painel
 2. Substitua o Client ID e Client Secret no seu sistema
@@ -135,5 +135,5 @@ Quando sua integracao estiver pronta:
 4. Teste com transacoes de baixo valor primeiro
 
 <Card title="Criar transacao de teste" icon="play" href="/api-reference/transactions/create">
-  Experimente criar uma transacao no playground.
+  Experimente criar uma transação no playground.
 </Card>

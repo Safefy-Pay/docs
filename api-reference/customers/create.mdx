@@ -4,20 +4,20 @@ description: "Crie um novo cliente"
 openapi: "/api-reference/openapi.json POST /v1/customers"
 ---
 
-Cria um novo cliente para associar a transacoes e facilitar o acompanhamento de pagamentos.
+Cria um novo cliente para associar a transações e facilitar o acompanhamento de pagamentos.
 
-## Parametros
+## Parâmetros
 
 <ParamField body="name" type="string" required>
   Nome completo do cliente.
 </ParamField>
 
 <ParamField body="email" type="string" required>
-  Endereco de email do cliente.
+  Endereço de email do cliente.
 </ParamField>
 
 <ParamField body="document" type="string">
-  Numero do documento (CPF ou CNPJ) sem formatacao.
+  Número do documento (CPF ou CNPJ) sem formatação.
 </ParamField>
 
 <ParamField body="documentType" type="string">

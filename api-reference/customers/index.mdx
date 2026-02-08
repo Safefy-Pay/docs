@@ -3,7 +3,7 @@ title: "Objeto Cliente"
 description: "Estrutura e atributos do objeto Cliente na API Safefy"
 ---
 
-O objeto Cliente representa um comprador ou pagador em sua aplicacao. Clientes podem ser associados a transacoes para facilitar o acompanhamento de pagamentos e historico de compras.
+O objeto Cliente representa um comprador ou pagador em sua aplicação. Clientes podem ser associados a transações para facilitar o acompanhamento de pagamentos e histórico de compras.
 
 ## Estrutura
 
@@ -35,11 +35,11 @@ O objeto Cliente representa um comprador ou pagador em sua aplicacao. Clientes p
 ## Atributos
 
 <ParamField body="id" type="string" required>
-  Identificador unico do cliente no formato UUID v4. Gerado automaticamente pela API.
+  Identificador único do cliente no formato UUID v4. Gerado automaticamente pela API.
 </ParamField>
 
 <ParamField body="externalId" type="string">
-  Identificador externo do cliente no seu sistema. Util para vincular o cliente da Safefy com registros do seu banco de dados.
+  Identificador externo do cliente no seu sistema. Útil para vincular o cliente da Safefy com registros do seu banco de dados.
 </ParamField>
 
 <ParamField body="name" type="string" required>
@@ -47,45 +47,45 @@ O objeto Cliente representa um comprador ou pagador em sua aplicacao. Clientes p
 </ParamField>
 
 <ParamField body="email" type="string" required>
-  Endereco de email do cliente. Deve ser um email valido.
+  Endereço de email do cliente. Deve ser um email válido.
 </ParamField>
 
 <ParamField body="document" type="string">
-  Numero do documento do cliente (CPF ou CNPJ) sem formatacao, apenas numeros.
+  Número do documento do cliente (CPF ou CNPJ) sem formatação, apenas números.
 </ParamField>
 
 <ParamField body="documentType" type="string">
-  Tipo do documento do cliente. Valores possiveis:
-  - `CPF` - Cadastro de Pessoa Fisica
-  - `CNPJ` - Cadastro Nacional de Pessoa Juridica
+  Tipo do documento do cliente. Valores possíveis:
+  - `CPF` - Cadastro de Pessoa Física
+  - `CNPJ` - Cadastro Nacional de Pessoa Jurídica
 </ParamField>
 
 <ParamField body="phone" type="string">
-  Numero de telefone do cliente no formato internacional (ex: +5511999999999).
+  Número de telefone do cliente no formato internacional (ex: +5511999999999).
 </ParamField>
 
 <ParamField body="status" type="string" required>
-  Status atual do cliente. Valores possiveis:
-  - `Active` - Cliente ativo e pode realizar transacoes
+  Status atual do cliente. Valores possíveis:
+  - `Active` - Cliente ativo e pode realizar transações
   - `Inactive` - Cliente inativo
 </ParamField>
 
 <ParamField body="metadata" type="string">
-  Campo livre para armazenar informacoes adicionais em formato JSON string. Maximo de 1000 caracteres.
+  Campo livre para armazenar informações adicionais em formato JSON string. Máximo de 1000 caracteres.
 </ParamField>
 
 <ParamField body="address" type="object">
-  Objeto contendo o endereco do cliente.
+  Objeto contendo o endereço do cliente.
 
-  <Expandable title="Atributos do endereco">
+  <Expandable title="Atributos do endereço">
     <ParamField body="address.street" type="string">
       Nome da rua ou avenida.
     </ParamField>
     <ParamField body="address.number" type="string">
-      Numero do endereco.
+      Número do endereço.
     </ParamField>
     <ParamField body="address.complement" type="string">
-      Complemento do endereco (apartamento, sala, etc).
+      Complemento do endereço (apartamento, sala, etc).
     </ParamField>
     <ParamField body="address.neighborhood" type="string">
       Bairro.
@@ -97,21 +97,21 @@ O objeto Cliente representa um comprador ou pagador em sua aplicacao. Clientes p
       Estado (sigla de 2 letras).
     </ParamField>
     <ParamField body="address.postalCode" type="string">
-      CEP sem formatacao, apenas numeros.
+      CEP sem formatação, apenas números.
     </ParamField>
     <ParamField body="address.country" type="string">
-      Codigo do pais (ex: BR).
+      Código do país (ex: BR).
     </ParamField>
   </Expandable>
 </ParamField>
 
 <ParamField body="createdAt" type="string" required>
-  Data e hora de criacao do cliente no formato ISO 8601.
+  Data e hora de criação do cliente no formato ISO 8601.
 </ParamField>
 
 ## Endpoints
 
-| Metodo | Endpoint | Descricao |
+| Método | Endpoint | Descrição |
 |--------|----------|-----------|
 | `POST` | `/v1/customers` | [Criar cliente](/api-reference/customers/create) |
 | `GET` | `/v1/customers` | [Listar clientes](/api-reference/customers/list) |
