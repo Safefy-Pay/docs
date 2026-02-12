@@ -125,7 +125,7 @@
       "post": {
         "tags": ["Transacoes"],
         "summary": "Criar transacao",
-        "description": "Cria uma nova transacao PIX ou boleto. Para PIX, apenas method e amount sao obrigatorios. Para boleto, method, amount e customerId sao obrigatorios (cliente deve ter nome e email). A imagem do QR Code não é retornada - utilize uma biblioteca de geração de QR Code no seu frontend para exibir o codigo visualmente.",
+        "description": "Cria uma nova transacao PIX ou boleto. Para PIX, apenas method e amount sao obrigatorios. Para boleto, method, amount e um cliente vinculado sao obrigatorios (customerId ou customerName). Se customerId nao for enviado e customerName for informado, a Safefy cria (ou reutiliza) um cliente automaticamente. A imagem do QR Code não é retornada - utilize uma biblioteca de geração de QR Code no seu frontend para exibir o codigo visualmente.",
         "operationId": "createTransaction",
         "requestBody": {
           "required": true,
@@ -144,7 +144,10 @@
                     "description": "Pagamento do pedido #12345",
                     "externalId": "pedido_12345",
                     "callbackUrl": "https://seusite.com.br/webhook",
-                    "pixExpirationMinutes": 30
+                    "pixExpirationMinutes": 30,
+                    "customerName": "Joao Silva",
+                    "customerDocument": "12345678900",
+                    "customerEmail": "joao@exemplo.com"
                   }
                 },
                 "boleto": {
@@ -154,6 +157,20 @@
                     "amount": 15000,
                     "currency": "BRL",
                     "customerId": "550e8400-e29b-41d4-a716-446655440000",
+                    "description": "Pagamento do pedido #67890",
+                    "boletoDueDate": "2025-02-15",
+                    "callbackUrl": "https://seusite.com.br/webhook"
+                  }
+                },
+                "boletoInlineCustomer": {
+                  "summary": "Criar transacao Boleto (criando cliente automaticamente)",
+                  "value": {
+                    "method": "Boleto",
+                    "amount": 15000,
+                    "currency": "BRL",
+                    "customerName": "Joao Silva",
+                    "customerDocument": "12345678900",
+                    "customerEmail": "joao@exemplo.com",
                     "description": "Pagamento do pedido #67890",
                     "boletoDueDate": "2025-02-15",
                     "callbackUrl": "https://seusite.com.br/webhook"
@@ -1832,7 +1849,7 @@
             "type": "string",
             "format": "uuid",
             "nullable": true,
-            "description": "ID do cliente cadastrado. Obrigatorio para boleto (cliente deve ter nome e email).",
+            "description": "ID do cliente cadastrado. Para boleto, informe customerId ou customerName.",
             "example": "550e8400-e29b-41d4-a716-446655440000"
           },
           "callbackUrl": {
@@ -1856,14 +1873,20 @@
           "customerName": {
             "type": "string",
             "nullable": true,
-            "description": "Nome do pagador (PIX)",
+            "description": "Nome do cliente/pagador. Se customerId nao for enviado e customerName for informado, a Safefy cria (ou reutiliza) um cliente e vincula a transacao.",
             "example": "Joao Silva"
           },
           "customerDocument": {
             "type": "string",
             "nullable": true,
-            "description": "CPF/CNPJ do pagador (PIX)",
+            "description": "CPF/CNPJ do cliente/pagador",
             "example": "12345678900"
+          },
+          "customerEmail": {
+            "type": "string",
+            "nullable": true,
+            "description": "Email do cliente/pagador (opcional). Se nao for enviado, a Safefy gera um email tecnico apenas para viabilizar o processamento.",
+            "example": "joao@exemplo.com"
           },
           "boletoDueDate": {
             "type": "string",

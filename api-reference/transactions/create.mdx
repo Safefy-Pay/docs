@@ -7,7 +7,7 @@ openapi: "/api-reference/openapi.json POST /v1/transactions"
 Cria uma transação PIX ou boleto.
 
 - **PIX**: Apenas `method` e `amount` são obrigatórios. Retorna o código **Copia e Cola** para pagamento.
-- **Boleto**: Requer `method`, `amount` e `customerId` (cliente com nome e email cadastrados). Retorna código de barras, linha digitável e URL do PDF.
+- **Boleto**: Requer `method`, `amount` e um cliente vinculado (`customerId` **ou** `customerName`). Retorna código de barras, linha digitável e URL do PDF.
 
 <Info>
 A imagem do QR Code **não é retornada** pela API. Você deve gerar a imagem no seu frontend usando uma biblioteca de QR Code a partir do campo `copyAndPaste`.
@@ -36,7 +36,19 @@ A imagem do QR Code **não é retornada** pela API. Você deve gerar a imagem no
 </ParamField>
 
 <ParamField body="customerId" type="string">
-  ID do cliente associado à transação (UUID). **Obrigatório para boleto.** O cliente deve ter `name` e `email` cadastrados.
+  ID do cliente associado à transação (UUID). Para boleto, é obrigatório informar **customerId ou customerName**.
+</ParamField>
+
+<ParamField body="customerName" type="string">
+  Nome do cliente/pagador. Se `customerId` não for enviado e você informar `customerName`, a Safefy cria (ou reutiliza) um cliente automaticamente e vincula a transação.
+</ParamField>
+
+<ParamField body="customerDocument" type="string">
+  CPF/CNPJ do cliente/pagador. Opcional.
+</ParamField>
+
+<ParamField body="customerEmail" type="string">
+  Email do cliente/pagador. Opcional. Se não for enviado, a Safefy gera um email técnico apenas para viabilizar o processamento.
 </ParamField>
 
 <ParamField body="pixExpirationMinutes" type="integer">
@@ -65,14 +77,15 @@ A imagem do QR Code **não é retornada** pela API. Você deve gerar a imagem no
 |-------|-----|--------|
 | `method` | Obrigatório | Obrigatório |
 | `amount` | Obrigatório | Obrigatório |
-| `customerId` | Opcional | **Obrigatório** |
+| `customerId` | Opcional | Opcional (se enviar `customerName`) |
+| `customerName` | Opcional | **Obrigatório** (se não enviar `customerId`) |
 | `description` | Opcional | Opcional |
 | `boletoDueDate` | N/A | Opcional (padrão: 3 dias) |
 | `callbackUrl` | Opcional | Opcional |
 
-<Warning>
-Para boleto, o cliente (`customerId`) deve ter **nome** e **email** cadastrados. Caso contrário, a transação será rejeitada.
-</Warning>
+<Tip>
+Se você já tem um cliente cadastrado, envie `customerId`. Se não tiver, envie `customerName` (e opcionalmente `customerDocument` e `customerEmail`) e a Safefy cuidará da vinculação.
+</Tip>
 
 ## Valores gerados automaticamente
 
