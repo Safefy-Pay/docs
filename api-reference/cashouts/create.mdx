@@ -31,3 +31,18 @@ Solicita uma transferência de fundos da sua conta Safefy para uma conta bancár
 <Warning>
 Certifique-se de ter saldo disponível suficiente antes de solicitar um saque. O valor será reservado imediatamente.
 </Warning>
+
+## Como funciona o valor disponível para saque
+
+Ao criar um saque, considere sempre o valor **disponível para saque agora** (`withdrawNowAvailable`), retornado em `GET /v1/balance`.
+
+- Em alguns momentos, para liberar o próximo valor disponível, o saque precisa ser feito no valor exato mostrado em `withdrawNowAvailable`.
+- Nessa situação, `requiresFullWithdrawalNow` vem como `true`.
+- Se você enviar um valor maior do que o disponível para saque agora, a API retorna erro de saldo insuficiente.
+
+### Erros relacionados
+
+| Código | Quando acontece | Exemplo de mensagem |
+|--------|-----------------|---------------------|
+| `full_withdrawal_required` | Quando é necessário sacar o valor exato disponível agora, mas o valor enviado é diferente de `withdrawNowAvailable` | `Para continuar, saque exatamente R$ X,XX agora.` |
+| `insufficient_balance` | Valor enviado acima do disponível para saque agora | `Saldo insuficiente. Disponível para saque agora: R$ X,XX. Necessário: R$ Y,YY.` |

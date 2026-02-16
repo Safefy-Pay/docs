@@ -10,7 +10,9 @@ Retorna o saldo atual da sua conta Safefy, incluindo valores disponíveis, pende
 
 | Campo | Descrição |
 |-------|-----------|  
-| `balance.available` | Saldo disponível para saque |
+| `balance.available` | Saldo disponível para saque agora |
+| `balance.withdrawNowAvailable` | Valor disponível para saque neste momento |
+| `balance.requiresFullWithdrawalNow` | Quando `true`, o próximo saque precisa ser no valor exato de `withdrawNowAvailable` |
 | `balance.pending` | Pagamentos aguardando confirmação |
 | `balance.reserved` | Valores reservados para saques em processamento |
 | `balance.total` | Soma de available + pending + reserved |
@@ -18,3 +20,7 @@ Retorna o saldo atual da sua conta Safefy, incluindo valores disponíveis, pende
 <Note>
 Todos os valores monetários estão em **centavos**. Para converter para reais, divida por 100.
 </Note>
+
+<Warning>
+Para criar saques, use `withdrawNowAvailable` como referência principal. Se `requiresFullWithdrawalNow` vier como `true`, faça o saque exatamente nesse valor para continuar o fluxo normalmente.
+</Warning>
