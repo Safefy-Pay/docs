@@ -18,6 +18,16 @@ sequenceDiagram
     Safefy-->>App: Dados da transação
 ```
 
+## Limite de geração de token (importante)
+
+Para proteger sua integração, existe um limite de **10 tokens por hora** para cada credencial.
+
+Em termos simples: se sua aplicação ficar pedindo token toda hora, ela pode ser bloqueada temporariamente com erro `429`.
+
+<Warning>
+Você não deve gerar um novo token a cada requisição. Gere 1 token, salve e reutilize até ele expirar.
+</Warning>
+
 ## Obtendo o token
 
 ```bash
@@ -56,6 +66,30 @@ curl https://api-payment.safefypay.com.br/v1/transactions \
 O token expira em **1 hora** (3600 segundos). Renove-o antes da expiração para evitar interrupções.
 </Warning>
 
+## Como evitar bloqueio de forma simples
+
+Pense no token como um “ingresso” válido por 1 hora:
+
+1. Gere o token uma vez.
+2. Salve o `accessToken` e a data/hora de expiração.
+3. Antes de pedir novo token, verifique se já existe um salvo e ainda válido.
+4. Se ainda estiver válido, use o mesmo token.
+5. Só gere outro quando estiver expirado (ou muito perto de expirar).
+
+Exemplo simples de lógica:
+
+```text
+se existe token salvo E agora < dataExpiracao:
+  usar token salvo
+senao:
+  gerar novo token
+  salvar token + dataExpiracao
+```
+
+<Tip>
+Uma prática segura é renovar alguns minutos antes da expiração (ex.: 2 a 5 minutos) para evitar falha por diferença de relógio entre servidores.
+</Tip>
+
 ---
 
 ## Boas práticas de segurança
@@ -83,7 +117,7 @@ O token expira em **1 hora** (3600 segundos). Renove-o antes da expiração para
 |--------|------|---------|
 | 401 | Credenciais inválidas | Verifique publicKey e secretKey |
 | 403 | IP não autorizado | Adicione o IP nas configurações da credencial |
-| 429 | Rate limit excedido | Aguarde o tempo indicado em Retry-After |
+| 429 | Limite de tokens excedido (`auth_rate_limit_exceeded`) | Reutilize o token já salvo até expirar e respeite o `Retry-After` |
 
 <Card title="Testar autenticacao" icon="play" href="/api-reference/auth/token">
   Experimente o endpoint de autenticação no playground.

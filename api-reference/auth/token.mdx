@@ -6,6 +6,11 @@ openapi: "/api-reference/openapi.json POST /v1/auth/token"
 
 Use este endpoint para obter o `accessToken` JWT e autenticar as demais requisições.
 
+<Warning>
+Este endpoint possui limite de **10 gerações de token por hora** por credencial.
+Se exceder, a API retorna `429` com código `auth_rate_limit_exceeded`.
+</Warning>
+
 ## Parâmetros
 
 <ParamField body="grantType" type="string" required>
@@ -23,3 +28,32 @@ Use este endpoint para obter o `accessToken` JWT e autenticar as demais requisi�
 <Note>
 O ambiente retornado (`Sandbox` ou `Production`) é determinado automaticamente pelas credenciais utilizadas.
 </Note>
+
+## Como usar sem cair no limite (explicação simples)
+
+Não gere token para toda chamada da API.
+
+Faça assim:
+
+1. Chame este endpoint para obter o token.
+2. Salve `accessToken` + horário de expiração (`agora + expiresIn`).
+3. Antes de gerar outro token, verifique o que está salvo.
+4. Se ainda não expirou, reutilize o token salvo.
+5. Gere novo token somente quando o atual expirar (ou estiver perto disso).
+
+Exemplo de regra:
+
+```text
+tokenSalvo = buscarNoCacheOuBanco()
+
+se tokenSalvo existe e agora < tokenSalvo.expiraEm:
+  retornar tokenSalvo
+
+novoToken = POST /v1/auth/token
+salvar novoToken.accessToken e expiraEm
+retornar novoToken
+```
+
+<Tip>
+Recomendação prática: considere o token expirado alguns minutos antes do horário final (ex.: 2 a 5 minutos) para evitar erro em produção.
+</Tip>
