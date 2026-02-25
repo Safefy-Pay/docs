@@ -7,26 +7,32 @@ import { StatusWidget } from "/snippets/status-widget.jsx";
 
 <StatusWidget />
 
-## Detalhes
+O widget acima exibe o status operacional atual, verificado automaticamente a cada 60 segundos.
+Para o histórico completo de incidentes e manutenções, acesse a página oficial de status:
 
-Esta página consulta o endpoint de health check a cada 60 segundos e exibe o histórico recente com um gráfico.
+**https://status.safefypay.com.br**
 
-## Endpoint de status
+---
 
-Acesse:
+## Endpoint de health check
 
-https://api-payment.safefypay.com.br/health
+Você também pode monitorar a API programaticamente:
 
-## Resposta esperada
+```
+GET https://api-payment.safefypay.com.br/health
+```
 
-Quando o serviço está saudável, o endpoint retorna HTTP 200 com um payload simples indicando que está online.
+- **HTTP 200** — API saudável e operacional
+- **Diferente de 200** — API indisponível ou degradada
+
+---
 
 ## Quando usar
 
-- Monitoramento externo de disponibilidade
-- Verificação rápida de incidentes
-- Diagnóstico de ambiente de staging
+- **Monitoramento externo** — integre o health endpoint ao seu sistema de alertas (ex: UptimeRobot, Datadog)
+- **Diagnóstico de incidentes** — verifique rapidamente se o problema está no nosso lado ou no seu
+- **Ambiente de staging** — confirme que a API está acessível antes de rodar testes automatizados
 
 <Note>
-Em caso de indisponibilidade, o endpoint retorna um status HTTP diferente de 200.
+Para histórico de incidentes, janelas de manutenção e atualizações de status em tempo real, consulte **https://status.safefypay.com.br**.
 </Note>

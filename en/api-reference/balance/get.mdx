@@ -1,0 +1,28 @@
+﻿---
+title: "Get balance"
+description: "Retrieve the current merchant balance"
+openapi: "/api-reference/openapi.json GET /v1/balance"
+---
+
+Returns the current balance of the authenticated merchant.
+
+All monetary values are in **cents** (e.g., `1500` = R$15.00).
+
+## Response fields
+
+| Field | Description |
+|-------|-------------|
+| `available` | Confirmed balance available for immediate withdrawal |
+| `withdrawNowAvailable` | Exact amount available for the next cashout |
+| `requiresFullWithdrawalNow` | When `true`, the next cashout must be exactly `withdrawNowAvailable` |
+| `pending` | Payments received but still in the settlement period |
+| `reserved` | Amount locked due to cashouts in processing or disputes |
+| `total` | `available` + `pending` + `reserved` |
+
+<Warning>
+Always use `withdrawNowAvailable` when creating a cashout. If `requiresFullWithdrawalNow` is `true`, your cashout request must use that exact amount.
+</Warning>
+
+<Note>
+All values are returned in cents (integers). Divide by 100 to get the value in BRL.
+</Note>

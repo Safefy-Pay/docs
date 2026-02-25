@@ -1,0 +1,20 @@
+﻿---
+title: "Get transaction"
+description: "Retrieve a transaction by ID"
+openapi: "/api-reference/openapi.json GET /v1/transactions/{id}"
+---
+
+Retrieves a specific transaction by its unique identifier.
+
+## Parameters
+
+<ParamField path="id" type="string" required>
+  The unique UUID identifier of the transaction.
+</ParamField>
+
+<Note>
+After payment is confirmed, the following fields are populated in the `pix` object:
+`pix.payerName`, `pix.payerDocument`, `pix.payerBank`, and `pix.endToEndId`.
+
+For boleto transactions, data is available in `boleto.barcode`, `boleto.digitableLine`, `boleto.pdfUrl`, and `boleto.dueDate`.
+</Note>

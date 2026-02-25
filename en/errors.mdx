@@ -1,31 +1,27 @@
+﻿---
+title: "Errors"
+description: "Error codes and how to handle them"
 ---
-title: "Errors and responses"
-description: "Understand the standard API response format"
----
 
-All Safefy API responses follow a consistent format, making it easy to handle success and error cases.
+The Safefy API uses conventional HTTP response codes to indicate the success or failure of requests.
 
-## Success format
+## Response format
 
+**Success:**
 ```json
 {
-  "data": {
-    "id": "550e8400-e29b-41d4-a716-446655440000",
-    "status": "Pending",
-    "amount": 1000
-  },
-  "message": "Transaction created successfully"
+  "data": { ... },
+  "message": "Operation completed successfully."
 }
 ```
 
-## Error format
-
+**Error:**
 ```json
 {
   "data": null,
   "error": {
-    "code": "VALIDATION_ERROR",
-    "message": "The 'amount' field must be greater than zero"
+    "code": "INSUFFICIENT_BALANCE",
+    "message": "Insufficient balance to complete this cashout."
   }
 }
 ```
@@ -35,14 +31,14 @@ All Safefy API responses follow a consistent format, making it easy to handle su
 ## HTTP status codes
 
 | Code | Meaning |
-|--------|-------------|
+|------|---------|
 | `200` | Success |
 | `201` | Resource created |
-| `400` | Validation error |
-| `401` | Not authenticated |
-| `403` | Not authorized |
+| `400` | Validation error or business rule violation |
+| `401` | Not authenticated  missing or invalid token |
+| `403` | Unauthorized  valid token but insufficient permissions |
 | `404` | Resource not found |
-| `409` | Conflict (e.g., duplicate externalId) |
+| `409` | Conflict  duplicate `externalId` |
 | `429` | Rate limit exceeded |
 | `500` | Internal server error |
 
@@ -50,17 +46,17 @@ All Safefy API responses follow a consistent format, making it easy to handle su
 
 ## Error codes
 
-| Code | Description |
-|--------|-----------|
-| `VALIDATION_ERROR` | Invalid or missing fields |
-| `AUTHENTICATION_REQUIRED` | Token not provided |
-| `INVALID_TOKEN` | Invalid or expired token |
-| `FORBIDDEN` | Unauthorized IP or insufficient permissions |
-| `NOT_FOUND` | Resource not found |
-| `DUPLICATE_EXTERNAL_ID` | externalId already exists |
-| `INSUFFICIENT_BALANCE` | Insufficient balance for cashout |
-| `RATE_LIMIT_EXCEEDED` | Too many requests |
-| `INTERNAL_ERROR` | Internal error |
+| Code | HTTP | Description |
+|------|------|-------------|
+| `VALIDATION_ERROR` | 400 | One or more request fields are invalid |
+| `AUTHENTICATION_REQUIRED` | 401 | No authentication token provided |
+| `INVALID_TOKEN` | 401 | Token is invalid or expired |
+| `FORBIDDEN` | 403 | Insufficient permissions for this action |
+| `NOT_FOUND` | 404 | Requested resource does not exist |
+| `DUPLICATE_EXTERNAL_ID` | 409 | The `externalId` is already in use |
+| `INSUFFICIENT_BALANCE` | 400 | Not enough balance available for the cashout |
+| `RATE_LIMIT_EXCEEDED` | 429 | Too many requests  slow down and retry |
+| `INTERNAL_ERROR` | 500 | Unexpected server error |
 
 ---
 
@@ -68,32 +64,37 @@ All Safefy API responses follow a consistent format, making it easy to handle su
 
 ```javascript
 try {
-  const response = await fetch('https://api-payment.safefypay.com.br/v1/transactions', {
+  const response = await fetch('https://api-payment.safefypay.com.br/v1/cashouts', {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json'
+      'Content-Type': 'application/json',
     },
-    body: JSON.stringify(data)
+    body: JSON.stringify({ amount: 5000, pixKeyType: 'CPF', pixKey: '12345678901' }),
   });
-  
-  const result = await response.json();
-  
-  if (result.error) {
-    switch (result.error.code) {
-      case 'VALIDATION_ERROR':
-        console.error('Invalid data:', result.error.message);
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    switch (data.error?.code) {
+      case 'INSUFFICIENT_BALANCE':
+        console.error('Insufficient balance for this cashout.');
         break;
-      case 'INVALID_TOKEN':
+      case 'RATE_LIMIT_EXCEEDED':
+        console.error('Rate limit hit. Try again later.');
+        break;
+      case 'VALIDATION_ERROR':
+        console.error('Invalid request:', data.error.message);
         break;
       default:
-        console.error('Error:', result.error.message);
+        console.error('API error:', data.error?.message);
     }
-  } else {
-    console.log('Transaction created:', result.data);
+    return;
   }
-} catch (error) {
-  console.error('Network error:', error);
+
+  console.log('Cashout created:', data.data);
+} catch (err) {
+  console.error('Network error:', err);
 }
 ```
 
@@ -101,21 +102,8 @@ try {
 
 ## Rate limiting
 
-When you exceed the request limit, the API returns `429` with the `Retry-After` header:
-
-```http
-HTTP/1.1 429 Too Many Requests
-Retry-After: 60
-Content-Type: application/json
-
-{
-  "error": {
-    "code": "RATE_LIMIT_EXCEEDED",
-    "message": "Request limit exceeded. Try again in 60 seconds."
-  }
-}
-```
+When you exceed the allowed request rate, the API returns `429 Too Many Requests` with a `Retry-After` header indicating how many seconds to wait before retrying.
 
 <Tip>
-Use the Retry-After header to know when you can retry.
+Always read the `Retry-After` header and wait the specified duration before retrying. Ignoring this header and retrying immediately will continue to return `429`.
 </Tip>

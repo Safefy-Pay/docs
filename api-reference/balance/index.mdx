@@ -11,10 +11,12 @@ O objeto Saldo (Balance) representa o estado financeiro atual da sua conta Safef
 {
   "currency": "BRL",
   "balance": {
-    "available": 1500000,
+    "available": 350000,
+    "withdrawNowAvailable": 350000,
+    "requiresFullWithdrawalNow": false,
     "pending": 250000,
     "reserved": 50000,
-    "total": 1800000
+    "total": 650000
   },
   "totals": {
     "lifetimeVolume": 50000000,
@@ -41,7 +43,13 @@ O objeto Saldo (Balance) representa o estado financeiro atual da sua conta Safef
   
   <Expandable title="Atributos do balance">
     <ParamField body="balance.available" type="integer" required>
-      Saldo disponível para saque em centavos. Este valor pode ser transferido para sua conta bancária.
+      Saldo disponível para saque agora em centavos (regra operacional do ciclo atual).
+    </ParamField>
+    <ParamField body="balance.withdrawNowAvailable" type="integer" required>
+      Valor disponível para saque imediato no ciclo atual, em centavos.
+    </ParamField>
+    <ParamField body="balance.requiresFullWithdrawalNow" type="boolean" required>
+      Quando `true`, o próximo saque deve ser exatamente o valor de `withdrawNowAvailable`.
     </ParamField>
     <ParamField body="balance.pending" type="integer" required>
       Saldo pendente em centavos. Pagamentos aguardando confirmação ou em período de liquidação.
@@ -50,7 +58,7 @@ O objeto Saldo (Balance) representa o estado financeiro atual da sua conta Safef
       Saldo reservado em centavos. Valores bloqueados para saques em processamento ou disputas.
     </ParamField>
     <ParamField body="balance.total" type="integer" required>
-      Saldo total em centavos. Soma de `available + pending + reserved`.
+      Saldo total visível em centavos. Soma de `available + pending + reserved`.
     </ParamField>
   </Expandable>
 </ParamField>

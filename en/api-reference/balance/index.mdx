@@ -1,0 +1,140 @@
+﻿---
+title: "Balance"
+description: "The Balance object and its attributes"
+---
+
+The **Balance** object represents the current financial position of your merchant account. All monetary values are in **cents**.
+
+## The Balance object
+
+```json
+{
+  "currency": "BRL",
+  "balance": {
+    "available": 45000,
+    "withdrawNowAvailable": 45000,
+    "requiresFullWithdrawalNow": false,
+    "pending": 12000,
+    "reserved": 5000,
+    "total": 62000
+  },
+  "totals": {
+    "lifetimeVolume": 1500000,
+    "lifetimePayouts": 900000,
+    "lifetimeRefunds": 20000
+  },
+  "period": {
+    "volumeToday": 35000,
+    "volumeThisWeek": 120000,
+    "volumeThisMonth": 380000
+  },
+  "updatedAt": "2024-01-15T10:00:00Z"
+}
+```
+
+---
+
+## Attributes
+
+<ParamField body="currency" type="string">
+  Currency code. Always `BRL`.
+</ParamField>
+
+<Expandable title="balance">
+  <ParamField body="balance.available" type="integer">
+    Confirmed balance from the current operational cycle, available for immediate withdrawal (in cents).
+  </ParamField>
+  <ParamField body="balance.withdrawNowAvailable" type="integer">
+    Exact amount available for your next cashout request (in cents). Always use this field when creating a cashout.
+  </ParamField>
+  <ParamField body="balance.requiresFullWithdrawalNow" type="boolean">
+    When `true`, your next cashout must be exactly `withdrawNowAvailable`. Partial withdrawals are not allowed until this cycle is cleared.
+  </ParamField>
+  <ParamField body="balance.pending" type="integer">
+    Payments received but still in the settlement/processing period (in cents). Moves to `available` after confirmation.
+  </ParamField>
+  <ParamField body="balance.reserved" type="integer">
+    Amount locked due to cashouts in processing, disputes, or chargeback guarantees (in cents).
+  </ParamField>
+  <ParamField body="balance.total" type="integer">
+    Sum of `available + pending + reserved` (in cents).
+  </ParamField>
+</Expandable>
+
+<Expandable title="totals">
+  <ParamField body="totals.lifetimeVolume" type="integer">Total payments received since account creation (in cents).</ParamField>
+  <ParamField body="totals.lifetimePayouts" type="integer">Total withdrawn since account creation (in cents).</ParamField>
+  <ParamField body="totals.lifetimeRefunds" type="integer">Total refunded since account creation (in cents).</ParamField>
+</Expandable>
+
+<Expandable title="period">
+  <ParamField body="period.volumeToday" type="integer">Payment volume for the current day (in cents).</ParamField>
+  <ParamField body="period.volumeThisWeek" type="integer">Payment volume for the current week (in cents).</ParamField>
+  <ParamField body="period.volumeThisMonth" type="integer">Payment volume for the current month (in cents).</ParamField>
+</Expandable>
+
+<ParamField body="updatedAt" type="string">
+  Date and time of the last balance update, in ISO 8601 format.
+</ParamField>
+
+---
+
+## Understanding your balance
+
+### Available
+Confirmed funds from completed payments in the current settlement cycle. This amount is free for immediate withdrawal.
+
+### Pending
+Payments that have been received but are still being processed or settling. These funds will move to `available` after confirmation.
+
+### Reserved
+Funds locked for active purposes:
+- Cashouts currently in `Processing` status
+- Amounts held for dispute or chargeback resolution
+
+### Total
+The sum of all three: `available + pending + reserved`. This is the full balance in your account, regardless of accessibility.
+
+---
+
+## Payment flow
+
+```
+Payment Received
+       
+   [Pending]
+       
+   Confirmed
+       
+  [Available]
+       
+Cashout Requested
+       
+  [Reserved]
+       
+Cashout Completed
+       
+  Bank Account
+```
+
+---
+
+## Values in cents
+
+All monetary values are integers in **cents** (BRL). Divide by `100` to display in reais.
+
+| Cents | Reais |
+|-------|-------|
+| `100` | R$1,00 |
+| `1500` | R$15,00 |
+| `15000` | R$150,00 |
+| `150000` | R$1.500,00 |
+| `1500000` | R$15.000,00 |
+
+---
+
+## Endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/v1/balance` | [Get balance](/en/api-reference/balance/get) |

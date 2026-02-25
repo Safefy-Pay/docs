@@ -1,0 +1,33 @@
+﻿---
+title: "API Reference Introduction"
+description: "Complete reference with Try It"
+---
+
+This section presents the complete Safefy API reference, with **Try It** enabled to test endpoints directly.
+
+## How to use
+
+1. Generate a token at [Authentication](/en/authentication)
+2. Open the [API Reference](/en/api-reference/reference) page
+3. Click **Try It** and enter your token in the `Authorization` field in the format `Bearer <token>`
+
+## Environments
+
+- **Sandbox**: for testing and simulations
+- **Production**: for real transactions
+
+## Sandbox (recommended to start)
+
+Use the Sandbox environment to simulate payments and validate your integration. You can:
+
+- Create PIX transactions without real money movement
+- Simulate status changes via `/v1/transactions/{id}/simulate`
+- Receive webhooks with test events
+
+## Authentication
+
+All protected endpoints use **Bearer Token** in the `Authorization` header.
+
+## Methods and endpoints
+
+HTTP methods (GET, POST, PATCH, etc.) and request/response schemas are displayed in **Try It**. Each endpoint can be tested directly in the reference.

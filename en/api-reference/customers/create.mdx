@@ -1,0 +1,37 @@
+﻿---
+title: "Create customer"
+description: "Create a new customer"
+openapi: "/api-reference/openapi.json POST /v1/customers"
+---
+
+Creates a new customer associated with your merchant account. Customers can be linked to transactions for better reporting and payment pre-filling.
+
+## Parameters
+
+<ParamField body="name" type="string" required>
+  Customer's full name.
+</ParamField>
+
+<ParamField body="email" type="string" required>
+  Customer's email address.
+</ParamField>
+
+<ParamField body="document" type="string">
+  Customer's CPF or CNPJ (digits only, no punctuation).
+</ParamField>
+
+<ParamField body="documentType" type="string">
+  Document type: `CPF` (individual) or `CNPJ` (company).
+</ParamField>
+
+<ParamField body="phone" type="string">
+  Customer's phone number in international format. Example: `+5511999999999`.
+</ParamField>
+
+<ParamField body="externalId" type="string">
+  Your internal ID for this customer. Must be unique per merchant.
+</ParamField>
+
+<ParamField body="metadata" type="string">
+  JSON string with custom data you want to store. Maximum 1000 characters.
+</ParamField>

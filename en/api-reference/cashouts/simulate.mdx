@@ -1,0 +1,28 @@
+﻿---
+title: "Simulate cashout"
+description: "Simulate cashout status changes in Sandbox"
+openapi: "/api-reference/openapi.json POST /v1/cashouts/{id}/simulate"
+---
+
+<Warning>
+This endpoint is only available in the **Sandbox** environment. It does not work with Production credentials.
+</Warning>
+
+Simulates a status change for a cashout, allowing you to test your integration without a real bank transfer.
+
+## Parameters
+
+<ParamField path="id" type="string" required>
+  The unique UUID identifier of the cashout to simulate.
+</ParamField>
+
+<ParamField body="action" type="integer" required>
+  Action to simulate:
+  - `1`  Moves the cashout to `Completed`
+  - `2`  Moves the cashout to `Failed`
+  - `3`  Moves the cashout to `Rejected`
+</ParamField>
+
+<Note>
+Simulating a status change triggers webhooks normally. If the cashout has a `callbackUrl`, the corresponding webhook will be delivered.
+</Note>

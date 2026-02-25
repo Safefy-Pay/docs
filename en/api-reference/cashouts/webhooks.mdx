@@ -1,0 +1,91 @@
+---
+title: "Webhooks"
+description: "Understand how Safefy sends cashout webhooks when status changes"
+---
+
+This page explains how webhooks work for the `callbackUrl` provided when creating a cashout.
+
+## When the webhook is sent
+
+- You send `callbackUrl` in `POST /v1/cashouts`.
+- Whenever the **cashout status** changes to a final status, Safefy sends an HTTP **POST** to that URL.
+- If `callbackUrl` is not provided, no webhook is sent.
+
+## Available events
+
+| Event | Cashout status |
+|-------|----------------|
+| `cashout.completed` | `Completed` |
+| `cashout.failed` | `Failed` |
+| `cashout.rejected` | `Rejected` |
+| `cashout.cancelled` | `Cancelled` |
+
+## Sent headers
+
+- `X-Safefy-Signature`
+- `X-Safefy-Event`
+- `X-Safefy-Delivery`
+- `X-Safefy-Attempt`
+
+The signature is an HMAC-SHA256 over the raw request body using `payoutId` as secret.
+
+## Delivery behavior
+
+- Method: `POST`
+- Content type: `application/json`
+- Retry policy: up to **3 attempts**
+- Backoff between attempts: **2s** then **4s**
+- `X-Safefy-Attempt` starts at `1`
+
+If all attempts fail, delivery is marked as failed internally.
+
+## How to acknowledge
+
+- Return any `2xx` status code as soon as the payload is accepted.
+- Process the event asynchronously in your system to avoid timeouts.
+- Use `id` (delivery id) or `data.id + type` as an idempotency key.
+
+## Signature validation (Node.js example)
+
+```ts
+import crypto from 'node:crypto';
+
+export function validateSafefySignature(rawBody: string, payoutId: string, receivedSignature: string): boolean {
+  const digest = crypto
+    .createHmac('sha256', payoutId)
+    .update(rawBody, 'utf8')
+    .digest('hex');
+
+  const expected = `sha256=${digest}`;
+  return crypto.timingSafeEqual(Buffer.from(expected), Buffer.from(receivedSignature));
+}
+```
+
+## Body shape
+
+```json
+{
+  "id": "4d955fd7-cbb9-4d3c-8d36-4cb5de773b35",
+  "type": "cashout.completed",
+  "createdAt": "2026-02-25T12:00:00Z",
+  "data": {
+    "id": "8f8fce31-5c83-42c4-b90b-c29636b595e3",
+    "externalId": "cashout-123",
+    "amount": 50000,
+    "fee": 1000,
+    "netAmount": 49000,
+    "currency": "BRL",
+    "status": "Completed",
+    "environment": "Production",
+    "requestedAt": "2026-02-25T11:58:00Z",
+    "processedAt": "2026-02-25T11:58:10Z",
+    "completedAt": "2026-02-25T12:00:00Z",
+    "failureReason": null,
+    "pix": {
+      "pixKeyType": "Email",
+      "pixKey": "m***@example.com",
+      "endToEndId": "E1234567820260225120000000001"
+    }
+  }
+}
+```

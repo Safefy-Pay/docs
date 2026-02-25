@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 
 export const StatusWidget = () => {
   const healthUrl = "https://api-payment.safefypay.com.br/health";
+  const statusPageUrl = "https://status.safefypay.com.br";
   const storageKey = "safefy_api_status_history_v1";
   const maxPoints = 48;
   const intervalMs = 60000;
@@ -98,7 +99,7 @@ export const StatusWidget = () => {
     };
   }, [points]);
 
-  const statusLabel = status === null ? "Verificando" : status ? "Online" : "Offline";
+  const statusLabel = status === null ? "Verificando" : status ? "Operacional" : "Indisponível";
   const statusColor = status === null ? "#9ca3af" : status ? "#22c55e" : "#ef4444";
 
   return (
@@ -110,7 +111,14 @@ export const StatusWidget = () => {
           </div>
           <div className="text-2xl font-semibold">{statusLabel}</div>
           <div className="text-sm text-zinc-500 dark:text-zinc-400">
-            Endpoint: {healthUrl}
+            <a
+              href={statusPageUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline hover:text-zinc-800 dark:hover:text-zinc-200"
+            >
+              {statusPageUrl}
+            </a>
           </div>
         </div>
         <div

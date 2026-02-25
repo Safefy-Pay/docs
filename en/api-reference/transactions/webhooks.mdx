@@ -1,0 +1,374 @@
+﻿---
+title: "Webhooks"
+description: "Receive real-time notifications for payment events"
+---
+
+Webhooks allow your application to receive **real-time notifications** whenever a payment changes status. Instead of polling the API, Safefy automatically sends a `POST` request to the `callbackUrl` you provided when creating the transaction.
+
+## Delivery
+
+A webhook notification is sent on **every status change** of a transaction. If the request to your server fails (non-2xx response or timeout), Safefy retries automatically with exponential backoff:
+
+| Attempt | Delay |
+|---------|-------|
+| 1st | Immediate |
+| 2nd | ~2 seconds |
+| 3rd | ~4 seconds |
+
+After 3 failed attempts, the event is marked as failed. Ensure your endpoint responds with **HTTP 200** quickly and processes the payload asynchronously.
+
+---
+
+## Events
+
+| Event | Trigger |
+|-------|---------|
+| `payment.completed` | Payment was confirmed and funds credited |
+| `payment.expired` | Transaction expired before payment was made |
+| `payment.failed` | An error occurred during payment processing |
+| `payment.cancelled` | Transaction was cancelled |
+| `payment.refunded` | Full refund was processed |
+| `payment.partially_refunded` | Partial refund was processed |
+| `payment.refund_requested` | Refund was requested and is pending processing |
+
+---
+
+## Headers
+
+Every webhook request includes the following headers:
+
+| Header | Description |
+|--------|-------------|
+| `X-Safefy-Signature` | HMAC-SHA256 signature of the payload (`sha256={hex}`) |
+| `X-Safefy-Event` | Event type (e.g. `payment.completed`) |
+| `X-Safefy-Delivery` | Unique UUID for this delivery attempt |
+| `X-Safefy-Attempt` | Attempt number: `1`, `2`, or `3` |
+
+---
+
+## Signature verification
+
+To confirm that the request came from Safefy and was not tampered with, verify the `X-Safefy-Signature` header.
+
+The signature is computed as **HMAC-SHA256** of the raw request body, using the **payment ID** (`id` field of the transaction) as the secret.
+
+<Tabs>
+  <Tab title="JavaScript">
+```javascript
+const crypto = require('crypto');
+
+function verifyWebhook(req) {
+  const signature = req.headers['x-safefy-signature'];
+  const rawBody = req.rawBody; // raw Buffer or string
+  const paymentId = JSON.parse(rawBody).data.id;
+
+  const expected = 'sha256=' + crypto
+    .createHmac('sha256', paymentId)
+    .update(rawBody)
+    .digest('hex');
+
+  return crypto.timingSafeEqual(
+    Buffer.from(signature),
+    Buffer.from(expected)
+  );
+}
+```
+  </Tab>
+  <Tab title="TypeScript">
+```typescript
+import crypto from 'crypto';
+import { Request } from 'express';
+
+function verifyWebhook(req: Request & { rawBody?: Buffer }): boolean {
+  const signature = req.headers['x-safefy-signature'] as string;
+  const rawBody = req.rawBody!;
+  const paymentId = JSON.parse(rawBody.toString()).data.id as string;
+
+  const expected = 'sha256=' + crypto
+    .createHmac('sha256', paymentId)
+    .update(rawBody)
+    .digest('hex');
+
+  return crypto.timingSafeEqual(
+    Buffer.from(signature),
+    Buffer.from(expected)
+  );
+}
+```
+  </Tab>
+  <Tab title="Python">
+```python
+import hmac
+import hashlib
+import json
+
+def verify_webhook(raw_body: bytes, signature: str) -> bool:
+    payload = json.loads(raw_body)
+    payment_id = payload['data']['id']
+
+    expected = 'sha256=' + hmac.new(
+        payment_id.encode(),
+        raw_body,
+        hashlib.sha256
+    ).hexdigest()
+
+    return hmac.compare_digest(signature, expected)
+```
+  </Tab>
+  <Tab title="C#">
+```csharp
+using System.Security.Cryptography;
+using System.Text;
+using System.Text.Json;
+
+bool VerifyWebhook(string rawBody, string signature)
+{
+    var payload = JsonSerializer.Deserialize<JsonElement>(rawBody);
+    var paymentId = payload.GetProperty("data").GetProperty("id").GetString()!;
+
+    var keyBytes = Encoding.UTF8.GetBytes(paymentId);
+    var bodyBytes = Encoding.UTF8.GetBytes(rawBody);
+
+    using var hmac = new HMACSHA256(keyBytes);
+    var hash = hmac.ComputeHash(bodyBytes);
+    var expected = "sha256=" + Convert.ToHexString(hash).ToLower();
+
+    return CryptographicOperations.FixedTimeEquals(
+        Encoding.UTF8.GetBytes(signature),
+        Encoding.UTF8.GetBytes(expected)
+    );
+}
+```
+  </Tab>
+  <Tab title="Go">
+```go
+package main
+
+import (
+  "crypto/hmac"
+  "crypto/sha256"
+  "encoding/hex"
+  "encoding/json"
+  "fmt"
+)
+
+func verifyWebhook(rawBody []byte, signature string) bool {
+  var payload map[string]interface{}
+  json.Unmarshal(rawBody, &payload)
+  data := payload["data"].(map[string]interface{})
+  paymentID := data["id"].(string)
+
+  mac := hmac.New(sha256.New, []byte(paymentID))
+  mac.Write(rawBody)
+  expected := "sha256=" + hex.EncodeToString(mac.Sum(nil))
+
+  return hmac.Equal([]byte(signature), []byte(expected))
+}
+```
+  </Tab>
+</Tabs>
+
+<Warning>
+Always use a **timing-safe comparison** (e.g. `crypto.timingSafeEqual`) to prevent timing attacks.
+</Warning>
+
+---
+
+## Webhook body
+
+All events share the same envelope structure. The `data` object contains the current state of the transaction.
+
+```json
+{
+  "id": "evt_01j5abc123def456",
+  "type": "payment.completed",
+  "createdAt": "2024-01-15T10:05:30Z",
+  "data": {
+    "id": "01j5abc123def456",
+    "externalId": "order-789",
+    "amount": 15000,
+    "fee": 300,
+    "netAmount": 14700,
+    "currency": "BRL",
+    "method": "Pix",
+    "status": "Completed",
+    "environment": "Production",
+    "description": "Product purchase",
+    "completedAt": "2024-01-15T10:05:28Z",
+    "refundedAt": null,
+    "expiresAt": "2024-01-15T22:59:00Z",
+    "failureReason": null,
+    "customerId": "cust_01j5xyz789",
+    "pix": {
+      "txId": "E12345678902024011519443501234ABCDE",
+      "endToEndId": "E12345678902024011519443501234ABCDE",
+      "payerName": "John Doe",
+      "payerDocument": "12345678901",
+      "payerBank": "Nubank"
+    }
+  }
+}
+```
+
+---
+
+## Event payloads
+
+### payment.completed
+
+Payment was confirmed. Funds have been credited to your balance.
+
+```json
+{
+  "id": "evt_completed_01",
+  "type": "payment.completed",
+  "createdAt": "2024-01-15T10:05:30Z",
+  "data": {
+    "id": "tx_01j5abc",
+    "amount": 15000,
+    "fee": 300,
+    "netAmount": 14700,
+    "status": "Completed",
+    "completedAt": "2024-01-15T10:05:28Z",
+    "pix": {
+      "txId": "E1234...",
+      "endToEndId": "E1234...",
+      "payerName": "John Doe",
+      "payerDocument": "12345678901",
+      "payerBank": "Nubank"
+    }
+  }
+}
+```
+
+### payment.expired
+
+The transaction window closed without a payment being made.
+
+```json
+{
+  "id": "evt_expired_01",
+  "type": "payment.expired",
+  "createdAt": "2024-01-15T23:59:01Z",
+  "data": {
+    "id": "tx_01j5abc",
+    "amount": 15000,
+    "status": "Expired",
+    "expiresAt": "2024-01-15T23:59:00Z",
+    "completedAt": null,
+    "failureReason": null
+  }
+}
+```
+
+### payment.failed
+
+A processing error prevented the payment from completing.
+
+```json
+{
+  "id": "evt_failed_01",
+  "type": "payment.failed",
+  "createdAt": "2024-01-15T10:03:00Z",
+  "data": {
+    "id": "tx_01j5abc",
+    "amount": 15000,
+    "status": "Failed",
+    "failureReason": "Processing error",
+    "completedAt": null
+  }
+}
+```
+
+### payment.cancelled
+
+The transaction was explicitly cancelled.
+
+```json
+{
+  "id": "evt_cancelled_01",
+  "type": "payment.cancelled",
+  "createdAt": "2024-01-15T10:02:00Z",
+  "data": {
+    "id": "tx_01j5abc",
+    "amount": 15000,
+    "status": "Cancelled",
+    "completedAt": null
+  }
+}
+```
+
+### payment.refunded
+
+The full payment amount was refunded to the payer.
+
+```json
+{
+  "id": "evt_refunded_01",
+  "type": "payment.refunded",
+  "createdAt": "2024-01-16T09:00:00Z",
+  "data": {
+    "id": "tx_01j5abc",
+    "amount": 15000,
+    "status": "Refunded",
+    "refundedAt": "2024-01-16T09:00:00Z",
+    "completedAt": "2024-01-15T10:05:28Z"
+  }
+}
+```
+
+### payment.partially_refunded
+
+Only part of the payment was refunded.
+
+```json
+{
+  "id": "evt_partial_01",
+  "type": "payment.partially_refunded",
+  "createdAt": "2024-01-16T09:00:00Z",
+  "data": {
+    "id": "tx_01j5abc",
+    "amount": 15000,
+    "status": "PartiallyRefunded",
+    "refundedAt": "2024-01-16T09:00:00Z",
+    "completedAt": "2024-01-15T10:05:28Z"
+  }
+}
+```
+
+### payment.refund_requested
+
+A refund has been requested and is being processed.
+
+```json
+{
+  "id": "evt_refund_req_01",
+  "type": "payment.refund_requested",
+  "createdAt": "2024-01-16T08:55:00Z",
+  "data": {
+    "id": "tx_01j5abc",
+    "amount": 15000,
+    "status": "Processing",
+    "completedAt": "2024-01-15T10:05:28Z"
+  }
+}
+```
+
+---
+
+## Best practices
+
+<AccordionGroup>
+  <Accordion title="Respond quickly">
+    Return `HTTP 200` immediately upon receiving the request. Run any processing (database writes, business logic) **asynchronously**. A slow or failing response causes unnecessary retries.
+  </Accordion>
+  <Accordion title="Save the raw event first">
+    Persist the raw webhook payload to your database before processing it. This gives you an audit log and protects against data loss if your processing logic fails.
+  </Accordion>
+  <Accordion title="Design for idempotency">
+    Retries may deliver the same event more than once. Use `X-Safefy-Delivery` as an idempotency key and skip events you have already processed.
+  </Accordion>
+  <Accordion title="Always verify the signature">
+    Reject any request where the `X-Safefy-Signature` header is missing or does not match. This prevents malicious actors from injecting fake events.
+  </Accordion>
+</AccordionGroup>

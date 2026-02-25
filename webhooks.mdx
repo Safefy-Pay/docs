@@ -1,31 +1,34 @@
 ---
 title: "Webhooks"
-description: "Receba notificações em tempo real sobre seus pagamentos"
+description: "Receba notificações em tempo real sobre payments e cashouts"
 ---
 
-Webhooks permitem que sua aplicação seja notificada automaticamente quando algo acontece com seus pagamentos.
+Webhooks permitem que sua aplicação seja notificada automaticamente quando ocorrerem mudanças em **payments** e **cashouts**.
 
 ## Como funciona
 
-Quando você cria uma transação com `callbackUrl`, a Safefy envia uma requisição HTTP POST para essa URL sempre que o status mudar.
+Ao criar um payment ou um cashout com `callbackUrl`, a Safefy envia uma requisição HTTP `POST` para essa URL sempre que o status muda para um estado relevante.
 
 ```mermaid
 sequenceDiagram
     participant Cliente as Cliente
     participant Safefy as Safefy
-    participant App as Sua Aplicacao
+    participant App as Sua Aplicação
     
-    Cliente->>Safefy: Paga o PIX
-    Safefy->>App: POST /webhook (payment.completed)
+    Cliente->>Safefy: Cria payment ou cashout
+    Safefy->>App: POST /webhook (payment.* ou cashout.*)
     App-->>Safefy: 200 OK
-    App->>App: Libera o produto/servico
+    App->>App: Processa evento de forma assíncrona
 ```
 
-Se quiser o detalhamento completo dos corpos de webhook, veja [Webhooks de transacao](/api-reference/transactions/webhooks).
+Para payloads completos por domínio, veja:
+
+- [Webhooks de transação](/api-reference/transactions/webhooks)
+- [Webhooks de saque](/api-reference/cashouts/webhooks)
 
 ---
 
-## Eventos disponíveis
+## Eventos de payment
 
 | Evento | Descrição | Quando acontece |
 |--------|-----------|-----------------|
@@ -39,7 +42,77 @@ Se quiser o detalhamento completo dos corpos de webhook, veja [Webhooks de trans
 
 ---
 
-## Status das transacoes
+## Eventos de cashout
+
+| Evento | Status do saque |
+|--------|-----------------|
+| `cashout.completed` | `Completed` |
+| `cashout.failed` | `Failed` |
+| `cashout.rejected` | `Rejected` |
+| `cashout.cancelled` | `Cancelled` |
+
+---
+
+## Headers enviados
+
+| Header | Descrição |
+|--------|-----------|
+| `X-Safefy-Signature` | Assinatura HMAC-SHA256 para validação |
+| `X-Safefy-Event` | Tipo do evento (`payment.*` ou `cashout.*`) |
+| `X-Safefy-Delivery` | ID único da entrega |
+| `X-Safefy-Attempt` | Número da tentativa (`1`, `2`, `3`) |
+
+---
+
+## Assinatura
+
+- Para eventos `payment.*`, o segredo é o `paymentId`.
+- Para eventos `cashout.*`, o segredo é o `payoutId`.
+
+Sempre valide a assinatura antes de processar o webhook.
+
+---
+
+## Retries
+
+Se sua aplicação não responder com `2xx`, a Safefy tenta novamente:
+
+1. Tentativa 1 (imediata)
+2. Tentativa 2 após ~2 segundos
+3. Tentativa 3 após ~4 segundos
+
+Recomendação: confirme rápido (`200 OK`) e processe em background.
+
+---
+
+## Idempotência
+
+Como podem existir retries, trate o processamento como idempotente.
+
+- Chave recomendada: `id` (delivery id) ou `data.id + type`
+- Ignore eventos já processados para evitar duplicidade
+
+---
+
+## Exemplo rápido
+
+```json
+{
+  "id": "4d955fd7-cbb9-4d3c-8d36-4cb5de773b35",
+  "type": "cashout.completed",
+  "createdAt": "2026-02-25T12:00:00Z",
+  "data": {
+    "id": "8f8fce31-5c83-42c4-b90b-c29636b595e3",
+    "status": "Completed",
+    "amount": 50000,
+    "netAmount": 49000
+  }
+}
+```
+
+---
+
+## Fluxo de status de payment
 
 Entenda o ciclo de vida de uma transação e quando cada webhook é disparado:
 
@@ -54,269 +127,6 @@ stateDiagram-v2
     Completed --> PartiallyRefunded: Estorno parcial
     Completed --> Processing: Estorno solicitado
 ```
-
-### Detalhes de cada status
-
-<AccordionGroup>
-  <Accordion title="Pending - Aguardando pagamento">
-    A transação foi criada e está aguardando o pagamento do cliente.
-    
-    **O que fazer:** Exiba o QR Code/código PIX para o cliente e aguarde a confirmação.
-    
-    **Webhook:** Nenhum webhook é enviado neste status.
-  </Accordion>
-  
-  <Accordion title="Completed - Pagamento confirmado">
-    O pagamento foi recebido e confirmado pelo banco. O valor já está disponível no seu saldo.
-    
-    **O que fazer:** Libere o produto/serviço para o cliente.
-    
-    **Webhook:** `payment.completed`
-    
-    **Campos importantes no webhook:**
-    - `data.completedAt` - Data/hora da confirmação
-    - `data.pix.endToEndId` - ID único da transação no Banco Central
-    - `data.pix.payerName` - Nome do pagador
-    - `data.pix.payerDocument` - Documento do pagador (mascarado)
-    - `data.pix.payerBank` - Banco do pagador
-  </Accordion>
-  
-  <Accordion title="Expired - Transação expirada">
-    O tempo para pagamento expirou e a transação foi automaticamente cancelada.
-    
-    **O que fazer:** Informe o cliente que o tempo expirou e ofereça uma nova tentativa.
-    
-    **Webhook:** `payment.expired`
-  </Accordion>
-  
-  <Accordion title="Failed - Falha no processamento">
-    Ocorreu um erro durante o processamento da transação.
-    
-    **O que fazer:** Verifique o campo `failureReason` e tome a ação apropriada.
-    
-    **Webhook:** `payment.failed`
-    
-    **Campo importante:** `data.failureReason` - Motivo da falha
-  </Accordion>
-  
-  <Accordion title="Cancelled - Transação cancelada">
-    A transação foi cancelada manualmente antes do pagamento.
-    
-    **O que fazer:** Nenhuma ação necessária.
-    
-    **Webhook:** `payment.cancelled`
-  </Accordion>
-  
-  <Accordion title="Refunded - Pagamento estornado">
-    O pagamento confirmado foi estornado. O valor foi devolvido ao pagador.
-    
-    **O que fazer:** Revogue o acesso ao produto/serviço.
-    
-    **Webhook:** `payment.refunded`
-    
-    **Campo importante:** `data.refundedAt` - Data/hora do estorno
-  </Accordion>
-
-  <Accordion title="PartiallyRefunded - Estorno parcial">
-    Parte do pagamento foi estornada.
-    
-    **O que fazer:** Ajuste o acesso do cliente de acordo com a política de estorno.
-    
-    **Webhook:** `payment.partially_refunded`
-  </Accordion>
-
-  <Accordion title="Processing - Estorno solicitado">
-    Um estorno foi solicitado e esta em processamento.
-    
-    **O que fazer:** Aguarde o resultado final do estorno.
-    
-    **Webhook:** `payment.refund_requested`
-  </Accordion>
-</AccordionGroup>
-
----
-
-## Payload de exemplo
-
-### payment.completed
-
-```json
-{
-  "id": "whk_550e8400-e29b-41d4-a716-446655440000",
-  "type": "payment.completed",
-  "createdAt": "2025-01-15T10:30:00Z",
-  "data": {
-    "id": "550e8400-e29b-41d4-a716-446655440000",
-    "externalId": "pedido-123",
-    "amount": 1000,
-    "fee": 15,
-    "netAmount": 985,
-    "currency": "BRL",
-    "method": "Pix",
-    "status": "Completed",
-    "environment": "Production",
-    "description": "Compra na Loja XYZ",
-    "completedAt": "2025-01-15T10:30:00Z",
-    "refundedAt": null,
-    "expiresAt": "2025-01-15T11:00:00Z",
-    "failureReason": null,
-    "customerId": "550e8400-e29b-41d4-a716-446655440001",
-    "pix": {
-      "txId": "SAFEFY2025011512345678901234",
-      "endToEndId": "E12345678202501151030ABC123",
-      "payerName": "Joao Silva",
-      "payerDocument": "***456789**",
-      "payerBank": "Banco do Brasil"
-    }
-  }
-}
-```
-
-### payment.failed
-
-```json
-{
-  "id": "whk_661f9511-f3c8-52e5-b827-557766551111",
-  "type": "payment.failed",
-  "createdAt": "2025-01-15T11:00:00Z",
-  "data": {
-    "id": "661f9511-f3c8-52e5-b827-557766551111",
-    "externalId": "pedido-456",
-    "amount": 5000,
-    "fee": 75,
-    "netAmount": 4925,
-    "currency": "BRL",
-    "method": "Pix",
-    "status": "Failed",
-    "environment": "Production",
-    "description": "Falha no processamento",
-    "completedAt": null,
-    "refundedAt": null,
-    "expiresAt": "2025-01-15T11:10:00Z",
-    "failureReason": "Falha no processamento",
-    "customerId": null,
-    "pix": {
-      "txId": "SAFEFY2025011598765432101234",
-      "endToEndId": null,
-      "payerName": null,
-      "payerDocument": null,
-      "payerBank": null
-    }
-  }
-}
-```
-
----
-
-## Headers enviados
-
-| Header | Descrição |
-|--------|-----------|
-| `X-Safefy-Signature` | Assinatura HMAC-SHA256 para validação |
-| `X-Safefy-Event` | Tipo do evento (payment.completed, etc) |
-| `X-Safefy-Delivery` | ID único da entrega |
-| `X-Safefy-Attempt` | Número da tentativa (1, 2, 3) |
-
----
-
-## Validando a assinatura
-
-Para garantir que o webhook veio da Safefy, valide a assinatura usando o `paymentId` como secret.
-
-<CodeGroup>
-```javascript JavaScript
-import crypto from 'crypto';
-
-export function validateWebhook(rawBody, signature, paymentId) {
-  const expected = 'sha256=' + crypto
-    .createHmac('sha256', paymentId)
-    .update(rawBody)
-    .digest('hex');
-
-  return crypto.timingSafeEqual(
-    Buffer.from(signature),
-    Buffer.from(expected)
-  );
-}
-```
-
-```typescript TypeScript
-import crypto from 'crypto';
-
-export function validateWebhook(
-  rawBody: string,
-  signature: string,
-  paymentId: string
-): boolean {
-  const expected = 'sha256=' + crypto
-    .createHmac('sha256', paymentId)
-    .update(rawBody)
-    .digest('hex');
-
-  return crypto.timingSafeEqual(
-    Buffer.from(signature),
-    Buffer.from(expected)
-  );
-}
-```
-
-```python Python
-import hmac
-import hashlib
-
-def validate_webhook(raw_body: str, signature: str, payment_id: str) -> bool:
-    expected = 'sha256=' + hmac.new(
-        payment_id.encode('utf-8'),
-        raw_body.encode('utf-8'),
-        hashlib.sha256
-    ).hexdigest()
-
-    return hmac.compare_digest(signature, expected)
-```
-
-```csharp C#
-using System.Security.Cryptography;
-using System.Text;
-
-public static bool ValidateWebhook(string rawBody, string signature, string paymentId)
-{
-    using var hmac = new HMACSHA256(Encoding.UTF8.GetBytes(paymentId));
-    var hash = hmac.ComputeHash(Encoding.UTF8.GetBytes(rawBody));
-    var expected = "sha256=" + Convert.ToHexString(hash).ToLower();
-    return CryptographicOperations.FixedTimeEquals(
-        Encoding.UTF8.GetBytes(signature),
-        Encoding.UTF8.GetBytes(expected)
-    );
-}
-```
-
-```go Go
-package webhooks
-
-import (
-  "crypto/hmac"
-  "crypto/sha256"
-  "encoding/hex"
-)
-
-func ValidateWebhook(rawBody, signature, paymentId string) bool {
-  mac := hmac.New(sha256.New, []byte(paymentId))
-  mac.Write([]byte(rawBody))
-  expected := "sha256=" + hex.EncodeToString(mac.Sum(nil))
-  return hmac.Equal([]byte(signature), []byte(expected))
-}
-```
-</CodeGroup>
-
-<Warning>
-Sempre valide a assinatura antes de processar o webhook.
-</Warning>
-
----
-
-## Retries
-
-Se sua aplicação não responder com `2xx`, a Safefy tentará novamente até 3 vezes:
 
 | Tentativa | Intervalo |
 |-----------|-----------|

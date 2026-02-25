@@ -1,0 +1,91 @@
+---
+title: "Webhooks de Saque"
+description: "Entenda como a Safefy envia webhooks de saque quando o status muda"
+---
+
+Esta página explica como funcionam os webhooks para o `callbackUrl` fornecido ao criar um saque.
+
+## Quando o webhook é enviado
+
+- Você envia `callbackUrl` no `POST /v1/cashouts`.
+- Sempre que o **status do saque** muda para um status final, a Safefy envia um `POST` HTTP para essa URL.
+- Se `callbackUrl` não for fornecido, nenhum webhook é enviado.
+
+## Eventos disponíveis
+
+| Evento | Status do saque |
+|--------|----------------|
+| `cashout.completed` | `Completed` |
+| `cashout.failed` | `Failed` |
+| `cashout.rejected` | `Rejected` |
+| `cashout.cancelled` | `Cancelled` |
+
+## Headers enviados
+
+- `X-Safefy-Signature`
+- `X-Safefy-Event`
+- `X-Safefy-Delivery`
+- `X-Safefy-Attempt`
+
+A assinatura é um HMAC-SHA256 do corpo bruto da requisição usando o `payoutId` como secret.
+
+## Comportamento de entrega
+
+- Método: `POST`
+- Content type: `application/json`
+- Política de retry: até **3 tentativas**
+- Backoff entre tentativas: **2s** e depois **4s**
+- `X-Safefy-Attempt` começa em `1`
+
+Se todas as tentativas falharem, a entrega é marcada como falha internamente.
+
+## Como confirmar o recebimento
+
+- Retorne qualquer código `2xx` assim que o payload for aceito.
+- Processe o evento de forma assíncrona no seu sistema para evitar timeouts.
+- Use `id` (id da entrega) ou `data.id + type` como chave de idempotência.
+
+## Validação da assinatura (exemplo Node.js)
+
+```ts
+import crypto from 'node:crypto';
+
+export function validateSafefySignature(rawBody: string, payoutId: string, receivedSignature: string): boolean {
+  const digest = crypto
+    .createHmac('sha256', payoutId)
+    .update(rawBody, 'utf8')
+    .digest('hex');
+
+  const expected = `sha256=${digest}`;
+  return crypto.timingSafeEqual(Buffer.from(expected), Buffer.from(receivedSignature));
+}
+```
+
+## Estrutura do body
+
+```json
+{
+  "id": "4d955fd7-cbb9-4d3c-8d36-4cb5de773b35",
+  "type": "cashout.completed",
+  "createdAt": "2026-02-25T12:00:00Z",
+  "data": {
+    "id": "8f8fce31-5c83-42c4-b90b-c29636b595e3",
+    "externalId": "cashout-123",
+    "amount": 50000,
+    "fee": 1000,
+    "netAmount": 49000,
+    "currency": "BRL",
+    "status": "Completed",
+    "environment": "Production",
+    "requestedAt": "2026-02-25T11:58:00Z",
+    "processedAt": "2026-02-25T11:58:10Z",
+    "completedAt": "2026-02-25T12:00:00Z",
+    "failureReason": null,
+    "pix": {
+      "pixKeyType": "Email",
+      "pixKey": "m***@example.com",
+      "endToEndId": "E1234567820260225120000000001"
+    }
+  }
+}
+```

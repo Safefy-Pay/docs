@@ -1,4 +1,4 @@
----
+﻿---
 title: "Authentication"
 description: "How to authenticate your requests in the Safefy API"
 ---
@@ -58,6 +58,32 @@ The token expires in **1 hour** (3600 seconds). Refresh it before expiration to 
 
 ---
 
+## Rate limiting
+
+Token generation is limited to **10 requests per hour** per credential pair (`publicKey` + `secretKey`). If you exceed this limit, the API returns `429 Too Many Requests` with the error code `auth_rate_limit_exceeded`.
+
+<Warning>
+**Do not generate a new token on every API call.** Cache the token and reuse it for its full 1-hour lifetime. Excessive token generation will trigger the rate limit and block your integration.
+</Warning>
+
+## Token caching
+
+Implement token caching to avoid unnecessary requests and stay well within the rate limit:
+
+```
+1. Check if savedToken exists
+2. If yes  check if (expiresAt - 5 minutes) > now
+3. If still valid  reuse savedToken   no API call needed
+4. If expired or not found  call POST /v1/auth/token
+5. Save new token + calculated expiresAt  use it
+```
+
+<Tip>
+Treat the token as expired **25 minutes before** its actual expiry (`expiresIn - 300` seconds). This protects against clock skew between your server and Safefy's servers.
+</Tip>
+
+---
+
 ## Security best practices
 
 <CardGroup cols={2}>
@@ -83,8 +109,8 @@ The token expires in **1 hour** (3600 seconds). Refresh it before expiration to 
 |------|-------|----------|
 | 401 | Invalid credentials | Check publicKey and secretKey |
 | 403 | Unauthorized IP | Add the IP in the credential settings |
-| 429 | Rate limit exceeded | Wait for the time indicated in Retry-After |
+| 429 | Rate limit exceeded | Wait for the time indicated in `Retry-After` |
 
-<Card title="Test authentication" icon="play" href="/api-reference/auth/token">
+<Card title="Test authentication" icon="play" href="/en/api-reference/auth/token">
   Try the authentication endpoint in the playground.
 </Card>

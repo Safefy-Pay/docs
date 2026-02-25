@@ -1,0 +1,119 @@
+﻿---
+title: "Create transaction"
+description: "Create a new PIX or Boleto charge"
+openapi: "/api-reference/openapi.json POST /v1/transactions"
+---
+
+Creates a new payment transaction. Supports **PIX** and **Boleto** payment methods.
+
+## Parameters
+
+<ParamField body="method" type="string" required>
+  Payment method: `Pix` or `Boleto`.
+</ParamField>
+
+<ParamField body="amount" type="integer" required>
+  Amount in **cents** (e.g., `15000` = R$150.00).
+</ParamField>
+
+<ParamField body="currency" type="string">
+  Currency code. Only `BRL` is supported. Defaults to `BRL`.
+</ParamField>
+
+<ParamField body="description" type="string">
+  Optional description shown on the payer's bank statement.
+</ParamField>
+
+<ParamField body="externalId" type="string">
+  Your internal ID for this transaction. Must be unique per merchant.
+</ParamField>
+
+<ParamField body="customerId" type="string">
+  ID of an existing customer to link to this transaction.
+</ParamField>
+
+<ParamField body="customerName" type="string">
+  Customer's full name. Required for Boleto if no `customerId` is provided.
+</ParamField>
+
+<ParamField body="customerDocument" type="string">
+  Customer's CPF or CNPJ (digits only). Required for Boleto if no `customerId` is provided.
+</ParamField>
+
+<ParamField body="customerEmail" type="string">
+  Customer's email address.
+</ParamField>
+
+<ParamField body="pixExpirationMinutes" type="integer">
+  PIX QR Code expiration time in minutes. Default is defined by your account settings.
+</ParamField>
+
+<ParamField body="boletoDueDate" type="string">
+  Due date for the boleto in ISO 8601 format. **Required for Boleto.**
+</ParamField>
+
+<ParamField body="boletoInstructions" type="string">
+  Optional instructions to print on the boleto (e.g., "Do not accept after due date").
+</ParamField>
+
+<ParamField body="callbackUrl" type="string">
+  URL to receive webhook notifications when the transaction status changes.
+</ParamField>
+
+<ParamField body="metadata" type="string">
+  JSON string with custom data. Maximum 1000 characters.
+</ParamField>
+
+---
+
+## Required fields by method
+
+| Field | PIX | Boleto |
+|-------|:---:|:------:|
+| `method` |  |  |
+| `amount` |  |  |
+| `customerName` | auto-fill |  |
+| `customerDocument` | auto-fill |  |
+| `boletoDueDate` |  |  |
+
+<Note>
+For PIX, the payer's name and CPF are filled automatically by the bank after payment confirmation. For Boleto, customer data must be provided at creation time.
+</Note>
+
+---
+
+## Generating a QR Code
+
+The `pix.copyAndPaste` field contains the EMV string used to render a QR Code. Use a library to generate the image:
+
+<Tabs>
+  <Tab title="Vanilla JS">
+    ```html
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <div id="qrcode"></div>
+    <script>
+      new QRCode(document.getElementById("qrcode"), transaction.pix.copyAndPaste);
+    </script>
+    ```
+  </Tab>
+  <Tab title="React">
+    ```bash
+    npm install react-qr-code
+    ```
+    ```jsx
+    import QRCode from 'react-qr-code';
+
+    <QRCode value={transaction.pix.copyAndPaste} size={200} />
+    ```
+  </Tab>
+  <Tab title="Next.js">
+    ```bash
+    npm install next-qrcode
+    ```
+    ```jsx
+    import { QRCode } from 'next-qrcode';
+
+    <QRCode text={transaction.pix.copyAndPaste} options={{ width: 200 }} />
+    ```
+  </Tab>
+</Tabs>

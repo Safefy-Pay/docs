@@ -1,32 +1,38 @@
----
+﻿---
 title: "API Status"
-description: "Track the payments API status in real time"
+description: "Check the current status of the Safefy API"
 ---
 
 import { StatusWidget } from "/snippets/status-widget.jsx";
 
 <StatusWidget />
 
-## Details
+The widget above shows the current operational status, automatically updated every 60 seconds.
+For the full incident history and maintenance windows, visit the official status page:
 
-This page checks the health endpoint every 60 seconds and shows a recent history chart.
+**https://status.safefypay.com.br**
 
-## Status endpoint
+---
 
-Access:
+## Health check endpoint
 
-http://localhost:5166/health
+You can also monitor the API programmatically:
 
-## Expected response
+```
+GET https://api-payment.safefypay.com.br/health
+```
 
-When the service is healthy, the endpoint returns HTTP 200 with a simple payload indicating it is online.
+- **HTTP 200** — API is healthy and operational
+- **Non-200** — API is unavailable or degraded
 
-## When to use
+---
 
-- External uptime monitoring
-- Quick incident checks
-- Staging environment diagnostics
+## Use cases
+
+- **External monitoring** — integrate the health endpoint into your alerting system (e.g., UptimeRobot, Datadog)
+- **Incident diagnosis** — quickly check whether an issue is on our side or yours
+- **Staging environment** — verify the API is reachable before running automated tests
 
 <Note>
-If the service is unavailable, the endpoint returns an HTTP status other than 200.
+For incident history, maintenance windows, and real-time status updates, visit **https://status.safefypay.com.br**.
 </Note>

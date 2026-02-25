@@ -1,0 +1,21 @@
+﻿---
+title: "Cancel cashout"
+description: "Cancel a pending cashout"
+openapi: "/api-reference/openapi.json POST /v1/cashouts/{id}/cancel"
+---
+
+Cancels a pending cashout before it is processed.
+
+## Parameters
+
+<ParamField path="id" type="string" required>
+  The unique UUID identifier of the cashout to cancel.
+</ParamField>
+
+<Warning>
+Cancellation is only possible while the cashout has `Pending` status. Once processing has begun, it can no longer be cancelled.
+</Warning>
+
+<Note>
+Upon successful cancellation, the reserved amount is immediately returned to your available balance.
+</Note>

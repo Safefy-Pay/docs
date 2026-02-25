@@ -1,0 +1,59 @@
+﻿---
+title: "Generate token"
+description: "OAuth2 authentication - Client Credentials"
+openapi: "/api-reference/openapi.json POST /v1/auth/token"
+---
+
+Use this endpoint to obtain the JWT `accessToken` to authenticate all other requests.
+
+<Warning>
+This endpoint has a limit of **10 token generations per hour** per credential.
+If exceeded, the API returns `429` with code `auth_rate_limit_exceeded`.
+</Warning>
+
+## Parameters
+
+<ParamField body="grantType" type="string" required>
+  Authentication type. Must be `client_credentials`.
+</ParamField>
+
+<ParamField body="publicKey" type="string" required>
+  Your public key. Starts with `pk_sandbox_` or `pk_production_`.
+</ParamField>
+
+<ParamField body="secretKey" type="string" required>
+  Your secret key. Starts with `sk_sandbox_` or `sk_production_`.
+</ParamField>
+
+<Note>
+The returned environment (`Sandbox` or `Production`) is determined automatically by the credentials used.
+</Note>
+
+## How to avoid hitting the limit
+
+Do not generate a new token for every API call.
+
+Follow these steps:
+
+1. Call this endpoint to obtain the token.
+2. Save `accessToken` + expiration time (`now + expiresIn`).
+3. Before generating another token, check what is saved.
+4. If not yet expired, reuse the saved token.
+5. Generate a new token only when the current one has expired (or is about to).
+
+Example rule:
+
+```text
+savedToken = fetchFromCacheOrDatabase()
+
+if savedToken exists and now < savedToken.expiresAt:
+  return savedToken
+
+newToken = POST /v1/auth/token
+save newToken.accessToken and expiresAt
+return newToken
+```
+
+<Tip>
+Practical recommendation: consider the token expired a few minutes before the actual expiry time (e.g., 2 to 5 minutes) to avoid errors in production due to clock drift.
+</Tip>
