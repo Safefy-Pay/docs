@@ -6,12 +6,6 @@ openapi: "/api-reference/openapi.json POST /v1/cashouts/{id}/cancel"
 
 Cancela um saque que ainda está em status `Pending`. Saques em processamento ou concluídos não podem ser cancelados.
 
-## Parâmetros de Path
-
-<ParamField path="id" type="string" required>
-  ID do saque (UUID).
-</ParamField>
-
 <Warning>
 Apenas saques com status `Pending` podem ser cancelados. O valor reservado será devolvido ao saldo disponível.
 </Warning>

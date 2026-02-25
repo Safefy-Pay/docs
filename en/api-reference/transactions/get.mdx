@@ -1,16 +1,10 @@
 ﻿---
 title: "Get transaction"
 description: "Retrieve a transaction by ID"
-openapi: "/api-reference/openapi.json GET /v1/transactions/{id}"
+openapi: "/api-reference/openapi.json GET /v1/transactions/{transactionId}"
 ---
 
 Retrieves a specific transaction by its unique identifier.
-
-## Parameters
-
-<ParamField path="id" type="string" required>
-  The unique UUID identifier of the transaction.
-</ParamField>
 
 <Note>
 After payment is confirmed, the following fields are populated in the `pix` object:

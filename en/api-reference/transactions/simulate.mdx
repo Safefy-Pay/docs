@@ -1,7 +1,7 @@
 ﻿---
 title: "Simulate transaction"
 description: "Simulate transaction status changes in Sandbox"
-openapi: "/api-reference/openapi.json POST /v1/transactions/{id}/simulate"
+openapi: "/api-reference/openapi.json POST /v1/transactions/{transactionId}/simulate"
 ---
 
 <Warning>
@@ -9,20 +9,6 @@ This endpoint is only available in the **Sandbox** environment. It does not work
 </Warning>
 
 Simulates a status change for a transaction, allowing you to test your integration without real payments.
-
-## Parameters
-
-<ParamField path="id" type="string" required>
-  The unique UUID identifier of the transaction to simulate.
-</ParamField>
-
-<ParamField body="action" type="string" required>
-  Action to simulate:
-  - `pay`  Moves the transaction to `Completed`
-  - `expire`  Moves the transaction to `Expired`
-  - `fail`  Moves the transaction to `Failed`
-  - `refund`  Moves the transaction to `Refunded` (only valid for `Completed` transactions)
-</ParamField>
 
 <Note>
 Simulating a status change triggers webhooks normally. If the transaction has a `callbackUrl`, the corresponding webhook will be delivered.

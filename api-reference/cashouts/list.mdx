@@ -4,30 +4,4 @@ description: "Liste e filtre seus saques"
 openapi: "/api-reference/openapi.json GET /v1/cashouts"
 ---
 
-Retorna uma lista paginada de saques com opções de filtragem.
-
-## Parâmetros de Query
-
-<ParamField query="page" type="integer">
-  Número da página. Padrão: 1.
-</ParamField>
-
-<ParamField query="pageSize" type="integer">
-  Quantidade de itens por página. Padrão: 20. Máximo: 100.
-</ParamField>
-
-<ParamField query="status" type="string">
-  Filtrar por status: `Pending`, `Processing`, `Completed`, `Failed`, `Rejected`, `Cancelled`.
-</ParamField>
-
-<ParamField query="externalId" type="string">
-  Filtrar por ID externo.
-</ParamField>
-
-<ParamField query="startDate" type="string">
-  Data inicial no formato ISO 8601.
-</ParamField>
-
-<ParamField query="endDate" type="string">
-  Data final no formato ISO 8601.
-</ParamField>
+Retorna uma lista paginada de saques com suporte a filtros de status, data e ID externo.

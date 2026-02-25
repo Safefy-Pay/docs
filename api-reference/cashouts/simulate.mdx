@@ -9,18 +9,3 @@ Simula o processamento de um saque no ambiente Sandbox. Use para testar fluxos d
 <Warning>
 Disponível apenas no ambiente **Sandbox**.
 </Warning>
-
-## Parâmetros de Path
-
-<ParamField path="id" type="string" required>
-  ID do saque (UUID).
-</ParamField>
-
-## Parâmetros de Body
-
-<ParamField body="action" type="integer" required>
-  Ação a simular:
-  - `1` - Simula conclusão com sucesso (Completed)
-  - `2` - Simula falha (Failed)
-  - `3` - Simula rejeição (Rejected)
-</ParamField>

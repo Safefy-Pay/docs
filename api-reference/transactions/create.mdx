@@ -13,64 +13,6 @@ Cria uma transação PIX ou boleto.
 A imagem do QR Code **não é retornada** pela API. Você deve gerar a imagem no seu frontend usando uma biblioteca de QR Code a partir do campo `copyAndPaste`.
 </Info>
 
-## Parâmetros
-
-<ParamField body="method" type="string" required>
-  Método de pagamento: `pix` ou `boleto`.
-</ParamField>
-
-<ParamField body="amount" type="integer" required>
-  Valor da transação em centavos. Exemplo: R$ 150,00 = `15000`.
-</ParamField>
-
-<ParamField body="currency" type="string">
-  Moeda. Padrão: `BRL`.
-</ParamField>
-
-<ParamField body="description" type="string">
-  Descrição da transação. Aparece no extrato do pagador.
-</ParamField>
-
-<ParamField body="externalId" type="string">
-  Identificador externo no seu sistema (ex: ID do pedido). Máximo 100 caracteres.
-</ParamField>
-
-<ParamField body="customerId" type="string">
-  ID do cliente associado à transação (UUID). Para boleto, é obrigatório informar **customerId ou customerName**.
-</ParamField>
-
-<ParamField body="customerName" type="string">
-  Nome do cliente/pagador. Se `customerId` não for enviado e você informar `customerName`, a Safefy cria (ou reutiliza) um cliente automaticamente e vincula a transação.
-</ParamField>
-
-<ParamField body="customerDocument" type="string">
-  CPF/CNPJ do cliente/pagador. Opcional.
-</ParamField>
-
-<ParamField body="customerEmail" type="string">
-  Email do cliente/pagador. Opcional. Se não for enviado, a Safefy gera um email técnico apenas para viabilizar o processamento.
-</ParamField>
-
-<ParamField body="pixExpirationMinutes" type="integer">
-  Tempo de expiração em minutos (apenas PIX). Padrão: 30 minutos.
-</ParamField>
-
-<ParamField body="boletoDueDate" type="string">
-  Data de vencimento do boleto (formato `YYYY-MM-DD`). Opcional — se não informado, o vencimento será em 3 dias.
-</ParamField>
-
-<ParamField body="boletoInstructions" type="string">
-  Instruções do boleto. Opcional.
-</ParamField>
-
-<ParamField body="callbackUrl" type="string">
-  URL para receber webhooks sempre que o status do pagamento mudar. Veja [Webhooks de transação](/api-reference/transactions/webhooks).
-</ParamField>
-
-<ParamField body="metadata" type="string">
-  Dados adicionais em formato JSON string. Máximo 1000 caracteres.
-</ParamField>
-
 ## Campos obrigatórios por método
 
 | Campo | PIX | Boleto |

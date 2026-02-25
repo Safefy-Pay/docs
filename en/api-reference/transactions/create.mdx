@@ -6,66 +6,6 @@ openapi: "/api-reference/openapi.json POST /v1/transactions"
 
 Creates a new payment transaction. Supports **PIX** and **Boleto** payment methods.
 
-## Parameters
-
-<ParamField body="method" type="string" required>
-  Payment method: `Pix` or `Boleto`.
-</ParamField>
-
-<ParamField body="amount" type="integer" required>
-  Amount in **cents** (e.g., `15000` = R$150.00).
-</ParamField>
-
-<ParamField body="currency" type="string">
-  Currency code. Only `BRL` is supported. Defaults to `BRL`.
-</ParamField>
-
-<ParamField body="description" type="string">
-  Optional description shown on the payer's bank statement.
-</ParamField>
-
-<ParamField body="externalId" type="string">
-  Your internal ID for this transaction. Must be unique per merchant.
-</ParamField>
-
-<ParamField body="customerId" type="string">
-  ID of an existing customer to link to this transaction.
-</ParamField>
-
-<ParamField body="customerName" type="string">
-  Customer's full name. Required for Boleto if no `customerId` is provided.
-</ParamField>
-
-<ParamField body="customerDocument" type="string">
-  Customer's CPF or CNPJ (digits only). Required for Boleto if no `customerId` is provided.
-</ParamField>
-
-<ParamField body="customerEmail" type="string">
-  Customer's email address.
-</ParamField>
-
-<ParamField body="pixExpirationMinutes" type="integer">
-  PIX QR Code expiration time in minutes. Default is defined by your account settings.
-</ParamField>
-
-<ParamField body="boletoDueDate" type="string">
-  Due date for the boleto in ISO 8601 format. **Required for Boleto.**
-</ParamField>
-
-<ParamField body="boletoInstructions" type="string">
-  Optional instructions to print on the boleto (e.g., "Do not accept after due date").
-</ParamField>
-
-<ParamField body="callbackUrl" type="string">
-  URL to receive webhook notifications when the transaction status changes.
-</ParamField>
-
-<ParamField body="metadata" type="string">
-  JSON string with custom data. Maximum 1000 characters.
-</ParamField>
-
----
-
 ## Required fields by method
 
 | Field | PIX | Boleto |

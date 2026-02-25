@@ -11,20 +11,6 @@ Este endpoint possui limite de **10 gerações de token por hora** por credencia
 Se exceder, a API retorna `429` com código `auth_rate_limit_exceeded`.
 </Warning>
 
-## Parâmetros
-
-<ParamField body="grantType" type="string" required>
-  Tipo de autenticação. Deve ser `client_credentials`.
-</ParamField>
-
-<ParamField body="publicKey" type="string" required>
-  Sua chave pública. Começa com `pk_sandbox_` ou `pk_production_`.
-</ParamField>
-
-<ParamField body="secretKey" type="string" required>
-  Sua chave secreta. Começa com `sk_sandbox_` ou `sk_production_`.
-</ParamField>
-
 <Note>
 O ambiente retornado (`Sandbox` ou `Production`) é determinado automaticamente pelas credenciais utilizadas.
 </Note>

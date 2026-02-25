@@ -4,41 +4,7 @@ description: "Request a withdrawal to a PIX key"
 openapi: "/api-reference/openapi.json POST /v1/cashouts"
 ---
 
-Creates a cashout request, transferring funds from your Safefy balance to a PIX key.
-
-## Parameters
-
-<ParamField body="amount" type="integer" required>
-  Amount to withdraw in **cents** (e.g., `5000` = R$50.00).
-</ParamField>
-
-<ParamField body="pixKeyType" type="string" required>
-  Type of PIX key: `CPF`, `CNPJ`, `Email`, `Phone`, or `Random`.
-</ParamField>
-
-<ParamField body="pixKey" type="string" required>
-  The PIX key to send the funds to.
-</ParamField>
-
-<ParamField body="externalId" type="string">
-  Your internal ID for this cashout. Must be unique per merchant.
-</ParamField>
-
-<ParamField body="description" type="string">
-  Optional description for this cashout.
-</ParamField>
-
-<ParamField body="callbackUrl" type="string">
-  URL to receive webhook notifications when the cashout status changes.
-</ParamField>
-
-<Warning>
-Make sure you have sufficient balance before creating a cashout. The requested amount is reserved immediately upon creation.
-</Warning>
-
----
-
-## Available balance for cashouts
+## Available balance
 
 Always use the `withdrawNowAvailable` field from [`GET /v1/balance`](/en/api-reference/balance/get) to determine the amount available for your next cashout.
 
