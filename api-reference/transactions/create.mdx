@@ -21,6 +21,7 @@ A imagem do QR Code **não é retornada** pela API. Você deve gerar a imagem no
 | `amount` | Obrigatório | Obrigatório |
 | `customerId` | Opcional | Opcional (se enviar `customerName`) |
 | `customerName` | Opcional | **Obrigatório** (se não enviar `customerId`) |
+| `customerPhone` | Opcional | Opcional |
 | `description` | Opcional | Opcional |
 | `boletoDueDate` | N/A | Opcional (padrão: 3 dias) |
 | `callbackUrl` | Opcional | Opcional |
@@ -28,6 +29,14 @@ A imagem do QR Code **não é retornada** pela API. Você deve gerar a imagem no
 <Tip>
 Se você já tem um cliente cadastrado, envie `customerId`. Se não tiver, envie `customerName` (e opcionalmente `customerDocument` e `customerEmail`) e a Safefy cuidará da vinculação.
 </Tip>
+
+### Campo opcional: telefone do cliente
+
+Você também pode enviar `customerPhone` para registrar o telefone do pagador quando criar a transação.
+
+- Formatos aceitos: com máscara ou apenas dígitos
+- Exemplos: `(11) 99999-9999`, `11999999999`
+- A API normaliza automaticamente para dígitos
 
 ## Valores gerados automaticamente
 
