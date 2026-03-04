@@ -6,54 +6,8 @@ openapi: "/api-reference/openapi.json POST /v1/transactions"
 
 Creates a new payment transaction. Supports **PIX** and **Boleto** payment methods.
 
-## Required fields by method
+<Info>
+QR Code images are **not returned** by the API. You should generate the image in your frontend using the `pix.copyAndPaste` value.
 
-| Field | PIX | Boleto |
-|-------|:---:|:------:|
-| `method` |  |  |
-| `amount` |  |  |
-| `customerName` | auto-fill |  |
-| `customerDocument` | auto-fill |  |
-| `boletoDueDate` |  |  |
-
-<Note>
-For PIX, the payer's name and CPF are filled automatically by the bank after payment confirmation. For Boleto, customer data must be provided at creation time.
-</Note>
-
----
-
-## Generating a QR Code
-
-The `pix.copyAndPaste` field contains the EMV string used to render a QR Code. Use a library to generate the image:
-
-<Tabs>
-  <Tab title="Vanilla JS">
-    ```html
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    <div id="qrcode"></div>
-    <script>
-      new QRCode(document.getElementById("qrcode"), transaction.pix.copyAndPaste);
-    </script>
-    ```
-  </Tab>
-  <Tab title="React">
-    ```bash
-    npm install react-qr-code
-    ```
-    ```jsx
-    import QRCode from 'react-qr-code';
-
-    <QRCode value={transaction.pix.copyAndPaste} size={200} />
-    ```
-  </Tab>
-  <Tab title="Next.js">
-    ```bash
-    npm install next-qrcode
-    ```
-    ```jsx
-    import { QRCode } from 'next-qrcode';
-
-    <QRCode text={transaction.pix.copyAndPaste} options={{ width: 200 }} />
-    ```
-  </Tab>
-</Tabs>
+See the dedicated guide: [Generating PIX QR Code](/en/api-reference/transactions/qr-code).
+</Info>

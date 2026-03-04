@@ -1,0 +1,74 @@
+---
+title: "Node.js SDK"
+description: "Install and use Safefy's official SDK with Node.js and TypeScript"
+---
+
+## Official package
+
+- [@safefypay/safefy-sdk-node](https://www.npmjs.com/package/@safefypay/safefy-sdk-node)
+
+## Installation
+
+```bash
+npm install @safefypay/safefy-sdk-node
+```
+
+## Basic usage
+
+```ts
+import { SafefyPaymentSDK } from "@safefypay/safefy-sdk-node";
+
+const sdk = new SafefyPaymentSDK({
+    publicKey: process.env.SAFEFY_PUBLIC_KEY!,
+    secretKey: process.env.SAFEFY_SECRET_KEY!,
+});
+
+const transaction = await sdk.transactions.create({
+    method: "Pix",
+    amount: 1500,
+    description: "Order #123",
+    customerName: "Maria",
+    customerDocument: "12345678901",
+    customerEmail: "maria@email.com",
+});
+
+console.log(transaction.id, transaction.status);
+```
+
+## What the SDK handles automatically
+
+- Generates token via `POST /v1/auth/token`
+- Refreshes token before expiration
+- Sends `Authorization: Bearer` on protected routes
+- Throws `SafefyApiError` with `status`, `code`, and `details`
+
+## Logging example
+
+```ts
+import { SafefyPaymentSDK } from "@safefypay/safefy-sdk-node";
+
+const sdk = new SafefyPaymentSDK({
+    publicKey: process.env.SAFEFY_PUBLIC_KEY!,
+    secretKey: process.env.SAFEFY_SECRET_KEY!,
+    log: {
+        enabled: true,
+        colors: true,
+        level: "debug",
+    },
+});
+```
+
+## Available modules
+
+- `sdk.transactions`: create, list, retrieve, and simulate transactions
+- `sdk.cashouts`: create, list, and retrieve cashouts
+- `sdk.customers`: create, list, retrieve, and update customers
+- `sdk.balance`: retrieve balance
+
+## Versioning
+
+The SDK follows semantic versioning in `MAJOR.MINOR.PATCH` format.
+
+- `MAJOR`: may contain breaking changes
+- `MINOR`: new backward-compatible features
+- `PATCH`: fixes and internal improvements

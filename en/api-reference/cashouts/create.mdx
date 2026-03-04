@@ -4,15 +4,9 @@ description: "Request a withdrawal to a PIX key"
 openapi: "/api-reference/openapi.json POST /v1/cashouts"
 ---
 
-## Available balance
+Creates a PIX cashout to the informed destination key.
 
-Always use the `withdrawNowAvailable` field from [`GET /v1/balance`](/en/api-reference/balance/get) to determine the amount available for your next cashout.
-
-When `requiresFullWithdrawalNow` is `true`, you **must** withdraw exactly `withdrawNowAvailable`  no more, no less.
-
-### Error codes
-
-| Code | Description |
-|------|-------------|
-| `full_withdrawal_required` | `requiresFullWithdrawalNow` is `true` but the amount sent does not match `withdrawNowAvailable` |
-| `insufficient_balance` | The requested amount exceeds `withdrawNowAvailable` |
+<Warning>
+Always use `withdrawNowAvailable` from [`GET /v1/balance`](/en/api-reference/balance/get).
+If `requiresFullWithdrawalNow` is `true`, the cashout amount must be exactly `withdrawNowAvailable`.
+</Warning>

@@ -1,0 +1,58 @@
+---
+title: "Generating PIX QR Code"
+description: "How to generate a QR Code image from the copyAndPaste field"
+---
+
+The `pix.copyAndPaste` field returns the PIX BR Code (EMV string).
+
+Use this value to render a QR Code image in your frontend.
+
+## JavaScript (qrcode.js)
+
+```html
+<script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+
+<canvas id="qrcode"></canvas>
+
+<script>
+  const pixCode = "00020126580014br.gov.bcb.pix0136a1b2c3d4...";
+  QRCode.toCanvas(document.getElementById('qrcode'), pixCode);
+</script>
+```
+
+## React (react-qr-code)
+
+```jsx
+import QRCode from 'react-qr-code';
+
+function PaymentPage({ transaction }) {
+  return (
+    <div>
+      <QRCode value={transaction.pix.copyAndPaste} size={256} />
+      <p>Or copy the code:</p>
+      <code>{transaction.pix.copyAndPaste}</code>
+    </div>
+  );
+}
+```
+
+## Next.js (next-qrcode)
+
+```jsx
+import { useQRCode } from 'next-qrcode';
+
+function PaymentPage({ transaction }) {
+  const { Canvas } = useQRCode();
+
+  return (
+    <Canvas
+      text={transaction.pix.copyAndPaste}
+      options={{ width: 256, margin: 2 }}
+    />
+  );
+}
+```
+
+<Tip>
+The `copyAndPaste` value can also be copied and pasted directly into a banking app.
+</Tip>

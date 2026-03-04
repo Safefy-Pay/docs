@@ -24,7 +24,7 @@
 						"groups": [
 							{
 								"group": "Introdução",
-								"pages": ["index", "quickstart"]
+								"pages": ["index", "quickstart", "sdk"]
 							},
 							{
 								"group": "Conceitos",
@@ -61,8 +61,9 @@
 								"group": "Transações",
 								"pages": [
 									"api-reference/transactions/index",
-									"api-reference/transactions/create",
 									"api-reference/transactions/webhooks",
+									"api-reference/transactions/qr-code",
+									"api-reference/transactions/create",
 									"api-reference/transactions/list",
 									"api-reference/transactions/get",
 									"api-reference/transactions/simulate"
@@ -76,8 +77,8 @@
 								"group": "Saques",
 								"pages": [
 									"api-reference/cashouts/index",
-									"api-reference/cashouts/create",
 									"api-reference/cashouts/webhooks",
+									"api-reference/cashouts/create",
 									"api-reference/cashouts/list",
 									"api-reference/cashouts/get",
 									"api-reference/cashouts/cancel",
@@ -96,7 +97,7 @@
 						"groups": [
 							{
 								"group": "Introduction",
-								"pages": ["en/index", "en/quickstart"]
+								"pages": ["en/index", "en/quickstart", "en/sdk"]
 							},
 							{
 								"group": "Concepts",
@@ -133,8 +134,9 @@
 								"group": "Transactions",
 								"pages": [
 									"en/api-reference/transactions/index",
-									"en/api-reference/transactions/create",
 									"en/api-reference/transactions/webhooks",
+									"en/api-reference/transactions/qr-code",
+									"en/api-reference/transactions/create",
 									"en/api-reference/transactions/list",
 									"en/api-reference/transactions/get",
 									"en/api-reference/transactions/simulate"
@@ -148,8 +150,8 @@
 								"group": "Cashouts",
 								"pages": [
 									"en/api-reference/cashouts/index",
-									"en/api-reference/cashouts/create",
 									"en/api-reference/cashouts/webhooks",
+									"en/api-reference/cashouts/create",
 									"en/api-reference/cashouts/list",
 									"en/api-reference/cashouts/get",
 									"en/api-reference/cashouts/cancel",

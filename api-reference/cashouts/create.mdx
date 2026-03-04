@@ -4,17 +4,9 @@ description: "Solicite uma transferência PIX para sua conta"
 openapi: "/api-reference/openapi.json POST /v1/cashouts"
 ---
 
-## Valor disponível para saque
+Solicita um saque PIX para a chave informada.
 
-Ao criar um saque, considere sempre o valor **disponível para saque agora** (`withdrawNowAvailable`), retornado em `GET /v1/balance`.
-
-- Em alguns momentos, para liberar o próximo valor disponível, o saque precisa ser feito no valor exato mostrado em `withdrawNowAvailable`.
-- Nessa situação, `requiresFullWithdrawalNow` vem como `true`.
-- Se você enviar um valor maior do que o disponível para saque agora, a API retorna erro de saldo insuficiente.
-
-### Erros relacionados
-
-| Código | Quando acontece | Exemplo de mensagem |
-|--------|-----------------|---------------------|
-| `full_withdrawal_required` | Quando é necessário sacar o valor exato disponível agora, mas o valor enviado é diferente de `withdrawNowAvailable` | `Para continuar, saque exatamente R$ X,XX agora.` |
-| `insufficient_balance` | Valor enviado acima do disponível para saque agora | `Saldo insuficiente. Disponível para saque agora: R$ X,XX. Necessário: R$ Y,YY.` |
+<Warning>
+Para criar saque, use `withdrawNowAvailable` retornado em `GET /v1/balance`.
+Se `requiresFullWithdrawalNow` for `true`, o valor do saque deve ser exatamente `withdrawNowAvailable`.
+</Warning>
