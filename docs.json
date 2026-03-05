@@ -24,7 +24,7 @@
 						"groups": [
 							{
 								"group": "Introdução",
-								"pages": ["index", "quickstart", "sdk", "mcp"]
+								"pages": ["index", "quickstart", "sdk", "mcp-safefy"]
 							},
 							{
 								"group": "Conceitos",
@@ -97,7 +97,7 @@
 						"groups": [
 							{
 								"group": "Introduction",
-								"pages": ["en/index", "en/quickstart", "en/sdk", "en/mcp"]
+								"pages": ["en/index", "en/quickstart", "en/sdk", "en/mcp-safefy"]
 							},
 							{
 								"group": "Concepts",
