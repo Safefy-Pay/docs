@@ -7,7 +7,7 @@ description: "Use Safefy directly in Claude, Cursor, v0, Lovable and other AI ag
 
 - [@safefypay/safefy-mcp](https://www.npmjs.com/package/@safefypay/safefy-mcp)
 
-The Safefy MCP Server implements the **Model Context Protocol (MCP)**, allowing AI agents to interact with the Safefy API directly — without writing any integration code.
+The Safefy MCP Server implements the **Model Context Protocol (MCP)**, allowing AI agents to interact with the Safefy API directly, without writing any integration code.
 
 ## Requirements
 
@@ -77,42 +77,42 @@ The Safefy MCP Server implements the **Model Context Protocol (MCP)**, allowing 
 The MCP Server exposes the following tools to the AI agent:
 
 ### Authentication
-- `configure_credentials` — Set public key and secret key
-- `authenticate` — Generate an access token
+- `configure_credentials`: Set public key and secret key
+- `authenticate`: Generate an access token
 
 ### Transactions
-- `create_transaction` — Create a PIX or boleto charge
-- `get_transaction` — Get details of a transaction
-- `list_transactions` — List transactions with filters
-- `simulate_transaction` — Simulate confirmation/failure in Sandbox
+- `create_transaction`: Create a PIX or boleto charge
+- `get_transaction`: Get details of a transaction
+- `list_transactions`: List transactions with filters
+- `simulate_transaction`: Simulate confirmation/failure in Sandbox
 
 ### Customers
-- `create_customer` — Create a customer
-- `get_customer` — Get customer by ID
-- `list_customers` — List customers with filters
-- `update_customer` — Update customer data
+- `create_customer`: Create a customer
+- `get_customer`: Get customer by ID
+- `list_customers`: List customers with filters
+- `update_customer`: Update customer data
 
 ### Balance
-- `get_balance` — Get available balance
+- `get_balance`: Get available balance
 
 ### Cashouts
-- `create_cashout` — Request a withdrawal
-- `get_cashout` — Get details of a cashout
-- `list_cashouts` — List cashouts with filters
-- `cancel_cashout` — Cancel a pending cashout
-- `simulate_cashout` — Simulate completion/failure in Sandbox
+- `create_cashout`: Request a withdrawal
+- `get_cashout`: Get details of a cashout
+- `list_cashouts`: List cashouts with filters
+- `cancel_cashout`: Cancel a pending cashout
+- `simulate_cashout`: Simulate completion/failure in Sandbox
 
 ### Payment Links
-- `get_payment_link` — Get payment link by ID
-- `get_payment_link_status` — Get status of a payment link
-- `start_payment_link` — Start a charge on a payment link
+- `get_payment_link`: Get payment link by ID
+- `get_payment_link_status`: Get status of a payment link
+- `start_payment_link`: Start a charge on a payment link
 
 ### Orders
-- `get_order` — Get order by ID
+- `get_order`: Get order by ID
 
 ### Products
-- `get_product` — Get product by ID
-- `list_products` — List products with filters
+- `get_product`: Get product by ID
+- `list_products`: List products with filters
 
 ## Usage example
 

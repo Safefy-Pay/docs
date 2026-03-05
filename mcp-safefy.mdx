@@ -7,7 +7,7 @@ description: "Use a Safefy diretamente no Claude, Cursor, v0, Lovable e outros a
 
 - [@safefypay/safefy-mcp](https://www.npmjs.com/package/@safefypay/safefy-mcp)
 
-O Safefy MCP Server implementa o protocolo **Model Context Protocol (MCP)**, permitindo que agentes de IA interajam com a API da Safefy diretamente — sem precisar escrever código de integração.
+O Safefy MCP Server implementa o protocolo **Model Context Protocol (MCP)**, permitindo que agentes de IA interajam com a API da Safefy diretamente, sem precisar escrever código de integração.
 
 ## Requisitos
 
@@ -77,42 +77,42 @@ O Safefy MCP Server implementa o protocolo **Model Context Protocol (MCP)**, per
 O MCP Server expõe as seguintes ferramentas para o agente de IA:
 
 ### Autenticação
-- `configure_credentials` — Configura public key e secret key
-- `authenticate` — Gera token de acesso
+- `configure_credentials`: Configura public key e secret key
+- `authenticate`: Gera token de acesso
 
 ### Transações
-- `create_transaction` — Cria cobrança PIX ou boleto
-- `get_transaction` — Consulta detalhes de uma transação
-- `list_transactions` — Lista transações com filtros
-- `simulate_transaction` — Simula confirmação/falha no Sandbox
+- `create_transaction`: Cria cobrança PIX ou boleto
+- `get_transaction`: Consulta detalhes de uma transação
+- `list_transactions`: Lista transações com filtros
+- `simulate_transaction`: Simula confirmação/falha no Sandbox
 
 ### Clientes
-- `create_customer` — Cria cliente
-- `get_customer` — Consulta cliente por ID
-- `list_customers` — Lista clientes com filtros
-- `update_customer` — Atualiza dados do cliente
+- `create_customer`: Cria cliente
+- `get_customer`: Consulta cliente por ID
+- `list_customers`: Lista clientes com filtros
+- `update_customer`: Atualiza dados do cliente
 
 ### Saldo
-- `get_balance` — Consulta saldo disponível
+- `get_balance`: Consulta saldo disponível
 
 ### Saques
-- `create_cashout` — Cria solicitação de saque
-- `get_cashout` — Consulta detalhes de um saque
-- `list_cashouts` — Lista saques com filtros
-- `cancel_cashout` — Cancela saque pendente
-- `simulate_cashout` — Simula conclusão/falha no Sandbox
+- `create_cashout`: Cria solicitação de saque
+- `get_cashout`: Consulta detalhes de um saque
+- `list_cashouts`: Lista saques com filtros
+- `cancel_cashout`: Cancela saque pendente
+- `simulate_cashout`: Simula conclusão/falha no Sandbox
 
 ### Links de Pagamento
-- `get_payment_link` — Consulta link de pagamento por ID
-- `get_payment_link_status` — Consulta status de um link
-- `start_payment_link` — Inicia cobrança em um link de pagamento
+- `get_payment_link`: Consulta link de pagamento por ID
+- `get_payment_link_status`: Consulta status de um link
+- `start_payment_link`: Inicia cobrança em um link de pagamento
 
 ### Pedidos
-- `get_order` — Consulta pedido por ID
+- `get_order`: Consulta pedido por ID
 
 ### Produtos
-- `get_product` — Consulta produto por ID
-- `list_products` — Lista produtos com filtros
+- `get_product`: Consulta produto por ID
+- `list_products`: Lista produtos com filtros
 
 ## Exemplo de uso
 
