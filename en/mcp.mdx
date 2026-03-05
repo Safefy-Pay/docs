@@ -1,0 +1,131 @@
+---
+title: "MCP Server (AI)"
+description: "Use Safefy directly in Claude, Cursor, v0, Lovable and other AI agents"
+---
+
+## Official package
+
+- [@safefypay/safefy-mcp](https://www.npmjs.com/package/@safefypay/safefy-mcp)
+
+The Safefy MCP Server implements the **Model Context Protocol (MCP)**, allowing AI agents to interact with the Safefy API directly — without writing any integration code.
+
+## Requirements
+
+- Node.js 18 or higher
+
+## Setup by platform
+
+<Tabs>
+  <Tab title="Claude">
+    Edit your `claude_desktop_config.json` file:
+
+    ```json
+    {
+      "mcpServers": {
+        "safefy": {
+          "command": "npx",
+          "args": ["-y", "@safefypay/safefy-mcp"]
+        }
+      }
+    }
+    ```
+
+    After adding, tell Claude:
+    > "Set up my Safefy credentials: public key `pk_...`, secret key `sk_...`"
+  </Tab>
+  <Tab title="Cursor / Windsurf / VS Code">
+    Create or edit the `mcp.json` file in your project:
+
+    ```json
+    {
+      "mcpServers": {
+        "safefy": {
+          "command": "npx",
+          "args": ["-y", "@safefypay/safefy-mcp"]
+        }
+      }
+    }
+    ```
+
+    After adding, tell the agent:
+    > "Set up my Safefy credentials: public key `pk_...`, secret key `sk_...`"
+  </Tab>
+  <Tab title="v0 (Vercel)">
+    1. Open v0 and click **"+"** to add an MCP Server
+    2. Select **"Command"** and fill in:
+       - **Command:** `npx`
+       - **Args:** `-y @safefypay/safefy-mcp`
+    3. Save and tell v0:
+       > "Set up my Safefy credentials: public key `pk_...`, secret key `sk_...`"
+  </Tab>
+  <Tab title="Lovable">
+    1. Go to **Settings → MCP Servers → Add Server**
+    2. Select **"Command"** and fill in:
+       - **Command:** `npx`
+       - **Args:** `-y @safefypay/safefy-mcp`
+    3. Save and tell Lovable:
+       > "Set up my Safefy credentials: public key `pk_...`, secret key `sk_...`"
+  </Tab>
+</Tabs>
+
+<Note>
+  Generate your credentials at [app.safefypay.com.br/panel/merchant/api-credentials](https://app.safefypay.com.br/panel/merchant/api-credentials).
+</Note>
+
+## Available tools
+
+The MCP Server exposes the following tools to the AI agent:
+
+### Authentication
+- `configure_credentials` — Set public key and secret key
+- `authenticate` — Generate an access token
+
+### Transactions
+- `create_transaction` — Create a PIX or boleto charge
+- `get_transaction` — Get details of a transaction
+- `list_transactions` — List transactions with filters
+- `simulate_transaction` — Simulate confirmation/failure in Sandbox
+
+### Customers
+- `create_customer` — Create a customer
+- `get_customer` — Get customer by ID
+- `list_customers` — List customers with filters
+- `update_customer` — Update customer data
+
+### Balance
+- `get_balance` — Get available balance
+
+### Cashouts
+- `create_cashout` — Request a withdrawal
+- `get_cashout` — Get details of a cashout
+- `list_cashouts` — List cashouts with filters
+- `cancel_cashout` — Cancel a pending cashout
+- `simulate_cashout` — Simulate completion/failure in Sandbox
+
+### Payment Links
+- `get_payment_link` — Get payment link by ID
+- `get_payment_link_status` — Get status of a payment link
+- `start_payment_link` — Start a charge on a payment link
+
+### Orders
+- `get_order` — Get order by ID
+
+### Products
+- `get_product` — Get product by ID
+- `list_products` — List products with filters
+
+## Usage example
+
+Once the MCP is configured, you can ask the AI agent:
+
+```
+Create a PIX charge of R$ 150.00 for customer João Silva, CPF 123.456.789-00.
+```
+
+The agent will call `create_transaction` automatically and return the QR Code and PIX copy-and-paste code.
+
+```
+List the last 10 transactions and show me the available balance.
+```
+
+The agent will call `list_transactions` and `get_balance` in parallel and present a summary.
