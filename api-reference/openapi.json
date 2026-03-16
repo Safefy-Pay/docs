@@ -229,7 +229,7 @@
                   "data": null,
                   "message": null,
                   "error": {
-                    "message": "O valor minimo da transacao e R$ 1,00 (100 centavos).",
+                    "message": "O Valor Mínimo da transacao e R$ 1,00 (100 centavos).",
                     "code": "invalid_amount"
                   }
                 }
