@@ -147,7 +147,8 @@
                     "pixExpirationMinutes": 30,
                     "customerName": "Joao Silva",
                     "customerDocument": "12345678900",
-                    "customerEmail": "joao@exemplo.com"
+                    "customerEmail": "joao@exemplo.com",
+                    "customerPhone": "5511999998888"
                   }
                 },
                 "boleto": {
@@ -171,6 +172,7 @@
                     "customerName": "Joao Silva",
                     "customerDocument": "12345678900",
                     "customerEmail": "joao@exemplo.com",
+                    "customerPhone": "5511999998888",
                     "description": "Pagamento do pedido #67890",
                     "boletoDueDate": "2025-02-15",
                     "callbackUrl": "https://seusite.com.br/webhook"
@@ -493,7 +495,7 @@
                       "name": "Joao Silva",
                       "email": "joao@email.com",
                       "document": "123.456.789-00",
-                      "phone": "11999998888"
+                      "phone": "5511999998888"
                     }
                   },
                   "message": null,
@@ -677,7 +679,7 @@
                 "externalId": "cliente_123",
                 "document": "12345678900",
                 "documentType": "CPF",
-                "phone": "11999998888",
+                "phone": "5511999998888",
                 "metadata": "{\"plano\": \"premium\"}"
               }
             }
@@ -699,7 +701,7 @@
                     "email": "joao@email.com",
                     "document": "123.456.789-00",
                     "documentType": "CPF",
-                    "phone": "11999998888",
+                    "phone": "5511999998888",
                     "status": "Active",
                     "metadata": "{\"plano\": \"premium\"}",
                     "address": null,
@@ -850,7 +852,7 @@
                         "email": "joao@email.com",
                         "document": "123.456.789-00",
                         "documentType": "CPF",
-                        "phone": "11999998888",
+                        "phone": "5511999998888",
                         "status": "Active",
                         "metadata": null,
                         "address": null,
@@ -926,7 +928,7 @@
                     "email": "joao@email.com",
                     "document": "123.456.789-00",
                     "documentType": "CPF",
-                    "phone": "11999998888",
+                    "phone": "5511999998888",
                     "status": "Active",
                     "metadata": null,
                     "address": {
@@ -1012,7 +1014,7 @@
               },
               "example": {
                 "name": "Joao Silva Santos",
-                "phone": "11999997777"
+                "phone": "5511999997777"
               }
             }
           }
@@ -1033,7 +1035,7 @@
                     "email": "joao@email.com",
                     "document": "123.456.789-00",
                     "documentType": "CPF",
-                    "phone": "11999997777",
+                    "phone": "5511999997777",
                     "status": "Active",
                     "metadata": null,
                     "address": null,
@@ -1904,6 +1906,12 @@
             "description": "Email do cliente/pagador (opcional). Se nao for enviado, a Safefy gera um email tecnico apenas para viabilizar o processamento.",
             "example": "joao@exemplo.com"
           },
+          "customerPhone": {
+            "type": "string",
+            "nullable": true,
+            "description": "Telefone do cliente/pagador com codigo do pais. Aceita com ou sem '+' no envio e e normalizado para apenas digitos no processamento.",
+            "example": "5511999998888"
+          },
           "boletoDueDate": {
             "type": "string",
             "format": "date",
@@ -2458,7 +2466,7 @@
           "phone": {
             "type": "string",
             "nullable": true,
-            "example": "11999998888"
+            "example": "5511999998888"
           }
         }
       },
@@ -2559,8 +2567,8 @@
           "phone": {
             "type": "string",
             "nullable": true,
-            "description": "Telefone (apenas numeros)",
-            "example": "11999998888"
+            "description": "Telefone com codigo do pais. Aceita com ou sem '+' no envio e e salvo apenas com digitos.",
+            "example": "5511999998888"
           },
           "metadata": {
             "type": "string",
@@ -2627,8 +2635,8 @@
           "phone": {
             "type": "string",
             "nullable": true,
-            "description": "Telefone",
-            "example": "11999998888"
+            "description": "Telefone com codigo do pais, salvo apenas com digitos",
+            "example": "5511999998888"
           },
           "status": {
             "type": "string",
@@ -2796,8 +2804,8 @@
           "phone": {
             "type": "string",
             "nullable": true,
-            "description": "Telefone",
-            "example": "11999997777"
+            "description": "Telefone com codigo do pais. Aceita com ou sem '+' no envio e e salvo apenas com digitos.",
+            "example": "5511999997777"
           },
           "status": {
             "type": "string",
