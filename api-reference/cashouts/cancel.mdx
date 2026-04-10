@@ -6,6 +6,10 @@ openapi: "/api-reference/openapi.json POST /v1/cashouts/{id}/cancel"
 
 Cancela um saque que ainda está em status `Pending`. Saques em processamento ou concluídos não podem ser cancelados.
 
+<Note>
+Este endpoint também exige permissão `cashouts.write` na credencial.
+</Note>
+
 <Warning>
 Apenas saques com status `Pending` podem ser cancelados. O valor reservado será devolvido ao saldo disponível.
 </Warning>

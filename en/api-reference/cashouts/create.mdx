@@ -6,6 +6,13 @@ openapi: "/api-reference/openapi.json POST /v1/cashouts"
 
 Creates a PIX cashout to the informed destination key.
 
+The cashout payload uses only `pixKeyType` and `pixKey` as destination.
+
+<Note>
+This endpoint requires credential permission `cashouts.write`.
+If `cashouts.allowAnyPixKey` is disabled, arbitrary PIX destination keys are not allowed.
+</Note>
+
 <Warning>
 Always use `withdrawNowAvailable` from [`GET /v1/balance`](/en/api-reference/balance/get).
 If `requiresFullWithdrawalNow` is `true`, the cashout amount must be exactly `withdrawNowAvailable`.

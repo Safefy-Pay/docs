@@ -6,6 +6,10 @@ openapi: "/api-reference/openapi.json POST /v1/cashouts/{id}/cancel"
 
 Cancels a pending cashout before it is processed.
 
+<Note>
+This endpoint also requires credential permission `cashouts.write`.
+</Note>
+
 <Warning>
 Cancellation is only possible while the cashout has `Pending` status. Once processing has begun, it can no longer be cancelled.
 </Warning>

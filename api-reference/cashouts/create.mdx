@@ -6,6 +6,13 @@ openapi: "/api-reference/openapi.json POST /v1/cashouts"
 
 Solicita um saque PIX para a chave informada.
 
+O payload de saque usa apenas `pixKeyType` e `pixKey` como destino.
+
+<Note>
+Este endpoint depende de permissão de credencial em `cashouts.write`.
+Se `cashouts.allowAnyPixKey` estiver desabilitado, a integração não poderá enviar chave PIX arbitrária.
+</Note>
+
 <Warning>
 Para criar saque, use `withdrawNowAvailable` retornado em `GET /v1/balance`.
 Se `requiresFullWithdrawalNow` for `true`, o valor do saque deve ser exatamente `withdrawNowAvailable`.

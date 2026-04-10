@@ -1170,7 +1170,7 @@
       "post": {
         "tags": ["Saques"],
         "summary": "Solicitar saque",
-        "description": "Solicita um novo saque do seu saldo disponivel para a conta PIX cadastrada.",
+        "description": "Solicita um novo saque do seu saldo disponivel para a chave PIX informada.",
         "operationId": "createCashout",
         "requestBody": {
           "required": true,
@@ -1180,17 +1180,8 @@
                 "$ref": "#/components/schemas/CreateCashoutRequest"
               },
               "examples": {
-                "conta-cadastrada": {
-                  "summary": "Usando conta cadastrada",
-                  "value": {
-                    "amount": 50000,
-                    "payoutAccountId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-                    "externalId": "saque_001",
-                    "callbackUrl": "https://seusite.com.br/webhook/cashout"
-                  }
-                },
                 "pix-inline": {
-                  "summary": "Usando chave PIX inline",
+                  "summary": "Usando chave PIX",
                   "value": {
                     "amount": 50000,
                     "pixKeyType": "CPF",
@@ -2955,7 +2946,7 @@
       },
       "CreateCashoutRequest": {
         "type": "object",
-        "required": ["amount"],
+        "required": ["amount", "pixKeyType", "pixKey"],
         "properties": {
           "amount": {
             "type": "integer",
@@ -2963,24 +2954,15 @@
             "description": "Valor do saque em centavos. Exemplo: R$ 500,00 = 50000.",
             "example": 50000
           },
-          "payoutAccountId": {
-            "type": "string",
-            "format": "uuid",
-            "nullable": true,
-            "description": "ID de uma conta de saque cadastrada. Use como alternativa a pixKeyType + pixKey. Apenas um dos dois deve ser informado.",
-            "example": "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
-          },
           "pixKeyType": {
             "type": "string",
             "enum": ["CPF", "CNPJ", "Email", "Phone", "Random"],
-            "nullable": true,
-            "description": "Tipo da chave PIX de destino. Obrigatorio se pixKey for informado. Nao pode ser usado junto com payoutAccountId.",
+            "description": "Tipo da chave PIX de destino.",
             "example": "CPF"
           },
           "pixKey": {
             "type": "string",
-            "nullable": true,
-            "description": "Chave PIX de destino. Obrigatorio se pixKeyType for informado. Nao pode ser usado junto com payoutAccountId.",
+            "description": "Chave PIX de destino.",
             "example": "12345678901"
           },
           "externalId": {
