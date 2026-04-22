@@ -1907,7 +1907,7 @@
             "type": "string",
             "format": "date",
             "nullable": true,
-            "description": "Data de vencimento do boleto (YYYY-MM-DD). Opcional - padrao: 3 dias a partir da data atual.",
+            "description": "Data de vencimento do boleto (YYYY-MM-DD). Obrigatorio para boleto. Minimo: D+2.",
             "example": "2025-02-15"
           },
           "boletoInstructions": {
@@ -1915,6 +1915,42 @@
             "nullable": true,
             "description": "Instrucoes do boleto. Opcional.",
             "example": "Nao receber apos o vencimento"
+          },
+          "cardNumber": {
+            "type": "string",
+            "nullable": true,
+            "description": "Numero do cartao de credito (obrigatorio para method=CreditCard)",
+            "example": "4111111111111111"
+          },
+          "cardHolderName": {
+            "type": "string",
+            "nullable": true,
+            "description": "Nome do titular do cartao (obrigatorio para method=CreditCard)",
+            "example": "JOAO SILVA"
+          },
+          "cardExpirationMonth": {
+            "type": "string",
+            "nullable": true,
+            "description": "Mes de expiracao do cartao, dois digitos (obrigatorio para method=CreditCard)",
+            "example": "12"
+          },
+          "cardExpirationYear": {
+            "type": "string",
+            "nullable": true,
+            "description": "Ano de expiracao do cartao, quatro digitos (obrigatorio para method=CreditCard)",
+            "example": "2028"
+          },
+          "cardCvv": {
+            "type": "string",
+            "nullable": true,
+            "description": "Codigo de seguranca do cartao CVV (obrigatorio para method=CreditCard)",
+            "example": "123"
+          },
+          "installments": {
+            "type": "integer",
+            "nullable": true,
+            "description": "Numero de parcelas, de 1 a 12 (obrigatorio para method=CreditCard)",
+            "example": 1
           }
         }
       },
