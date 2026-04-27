@@ -3,13 +3,58 @@ title: "Autenticação"
 description: "Como autenticar suas requisições na API Safefy"
 ---
 
-A Safefy utiliza **OAuth2 Client Credentials** para autenticação. Você precisa obter um token JWT antes de fazer qualquer outra requisição.
+A Safefy oferece dois modos de autenticação. Escolha o que melhor se adapta à sua integração:
+
+| | **v2 (Direto, recomendado)** | **v1 (Legacy)** |
+|---|---|---|
+| Como funciona | Envia `X-Api-Key` + `X-Api-Secret` em cada requisição | Gera token JWT via `/v1/auth/token` e envia no header `Authorization` |
+| Passo extra de autenticação | Não | Sim |
+| Limite de rate limit de token | Não se aplica | 10 tokens/hora por credencial |
+| Renovação de token | Não precisa | Necessário a cada hora |
+| Recomendado para | Todas as novas integrações | Integrações existentes (manter como está) |
 
 <Info>
 As permissões da credencial (leitura/escrita por módulo, incluindo saques) estão detalhadas em [Permissões da credencial](/credential-permissions).
 </Info>
 
-## Como funciona
+## Autenticação v2 (Direto, recomendado)
+
+Envie suas credenciais diretamente em cada requisição via dois headers. Nenhum passo de geração de token é necessário.
+
+```bash
+curl https://api-payment.safefypay.com.br/v1/transactions \
+  -H "X-Api-Key: pk_sandbox_abc123..." \
+  -H "X-Api-Secret: sk_sandbox_xyz789..."
+```
+
+<Tip>
+Este é o modo recomendado para novas integrações. Sem tokens, sem expiração, sem lógica de renovação.
+</Tip>
+
+### Usando o SDK Node.js (v2)
+
+```typescript
+import { SafefyPaymentSDK } from "safefy-sdk-node";
+
+const safefy = new SafefyPaymentSDK({
+  publicKey: process.env.SAFEFY_PUBLIC_KEY!,
+  secretKey: process.env.SAFEFY_SECRET_KEY!,
+  authMode: "v2", // <- sem geração de token
+});
+
+// Pode chamar diretamente, sem chamar authenticate() antes
+const transactions = await safefy.transactions.list();
+```
+
+---
+
+## Autenticação v1 (OAuth2, legacy)
+
+<Warning>
+O modo v1 ainda é suportado, mas novas integrações devem utilizar o **v2** acima.
+</Warning>
+
+### Como funciona
 
 ```mermaid
 sequenceDiagram
@@ -22,7 +67,7 @@ sequenceDiagram
     Safefy-->>App: Dados da transação
 ```
 
-## Limite de geração de token (importante)
+### Limite de geração de token (importante)
 
 Para proteger sua integração, existe um limite de **10 tokens por hora** para cada credencial.
 
@@ -32,7 +77,7 @@ Em termos simples: se sua aplicação ficar pedindo token toda hora, ela pode se
 Você não deve gerar um novo token a cada requisição. Gere 1 token, salve e reutilize até ele expirar.
 </Warning>
 
-## Obtendo o token
+### Obtendo o token
 
 ```bash
 curl -X POST https://api-payment.safefypay.com.br/v1/auth/token \
@@ -57,7 +102,7 @@ curl -X POST https://api-payment.safefypay.com.br/v1/auth/token \
 }
 ```
 
-## Usando o token
+### Usando o token
 
 Inclua o token no header `Authorization` de todas as requisições:
 
@@ -70,7 +115,7 @@ curl https://api-payment.safefypay.com.br/v1/transactions \
 O token expira em **1 hora** (3600 segundos). Renove-o antes da expiração para evitar interrupções.
 </Warning>
 
-## Como evitar bloqueio de forma simples
+### Como evitar bloqueio de forma simples
 
 Pense no token como um “ingresso” válido por 1 hora:
 
