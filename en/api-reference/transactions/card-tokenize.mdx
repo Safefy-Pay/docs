@@ -1,0 +1,84 @@
+---
+title: "Tokenize card"
+description: "Securely tokenize a credit card"
+openapi: "/api-reference/openapi.json POST /v1/card-tokenize"
+---
+
+Tokenizes a credit card using the merchant's active acquirer, without storing PAN/CVV in Safefy's database. The returned token can be used in `POST /v1/transactions` via the `cardToken` field.
+
+## Request
+
+`POST /v1/card-tokenize`
+
+```json
+{
+  "cardNumber": "4111111111111111",
+  "cardHolderName": "João Silva",
+  "cardExpirationMonth": 12,
+  "cardExpirationYear": 2028,
+  "cardCvv": "123"
+}
+```
+
+### Parameters
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `cardNumber` | string | yes | Card number (13-19 digits) |
+| `cardHolderName` | string | yes | Name printed on the card |
+| `cardExpirationMonth` | int | yes | Expiration month (1-12) |
+| `cardExpirationYear` | int | yes | Expiration year (e.g. 2028) |
+| `cardCvv` | string | yes | Security code (3-4 digits) |
+
+## Responses
+
+### 200 — Success
+
+```json
+{
+  "data": {
+    "cardToken": "ct_abc123def456",
+    "last4": "1111",
+    "brand": "visa"
+  }
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `cardToken` | string | Card token (prefix `ct_`). Time-limited validity. |
+| `last4` | string | Last 4 digits of the card |
+| `brand` | string | Card brand (e.g. `visa`, `mastercard`) |
+
+### 400 — Invalid data
+
+```json
+{
+  "error": {
+    "message": "Invalid card data.",
+    "code": "invalid_card_data"
+  }
+}
+```
+
+### 401 — Invalid JWT token
+
+```json
+{
+  "error": {
+    "message": "Invalid token.",
+    "code": "invalid_token"
+  }
+}
+```
+
+### 422 — Acquirer doesn't support tokenization
+
+```json
+{
+  "error": {
+    "message": "Configured acquirer does not natively support tokenization.",
+    "code": "tokenization_not_supported"
+  }
+}
+```

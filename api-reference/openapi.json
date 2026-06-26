@@ -1714,6 +1714,70 @@
           }
         }
       }
+    },
+    "/v1/card-tokenize": {
+      "post": {
+        "tags": ["Transacoes"],
+        "summary": "Tokenizar cartao",
+        "operationId": "cardTokenize",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CardTokenizeRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Cartao tokenizado com sucesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CardTokenizeResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Dados invalidos",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CardTokenizeResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Token JWT invalido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CardTokenizeResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Adquirente nao suporta tokenizacao",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CardTokenizeResponse"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -1951,6 +2015,12 @@
             "nullable": true,
             "description": "Numero de parcelas, de 1 a 12 (obrigatorio para method=CreditCard)",
             "example": 1
+          },
+          "cardToken": {
+            "type": "string",
+            "nullable": true,
+            "description": "Token de cartao obtido via /v1/card-tokenize (alternativa ao envio de dados brutos do cartao)",
+            "example": "ct_abc123def456"
           }
         }
       },
@@ -3420,6 +3490,72 @@
             "type": "string",
             "nullable": true,
             "example": "SANDBOX_TXN_001"
+          }
+        }
+      },
+      "CardTokenizeRequest": {
+        "type": "object",
+        "required": ["cardNumber", "cardHolderName", "cardExpirationMonth", "cardExpirationYear", "cardCvv"],
+        "properties": {
+          "cardNumber": {
+            "type": "string",
+            "description": "Numero do cartao (13-19 digitos)",
+            "example": "4111111111111111"
+          },
+          "cardHolderName": {
+            "type": "string",
+            "description": "Nome impresso no cartao",
+            "example": "JOAO SILVA"
+          },
+          "cardExpirationMonth": {
+            "type": "string",
+            "description": "Mes de expiracao (1-12)",
+            "example": "12"
+          },
+          "cardExpirationYear": {
+            "type": "string",
+            "description": "Ano de expiracao (4 digitos)",
+            "example": "2028"
+          },
+          "cardCvv": {
+            "type": "string",
+            "description": "Codigo de seguranca (3-4 digitos)",
+            "example": "123"
+          }
+        }
+      },
+      "CardTokenizeResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/CardTokenizeData"
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "error": {
+            "$ref": "#/components/schemas/ApiErrorResponse"
+          }
+        }
+      },
+      "CardTokenizeData": {
+        "type": "object",
+        "properties": {
+          "cardToken": {
+            "type": "string",
+            "description": "Token do cartao (prefixo ct_). Valido por tempo limitado.",
+            "example": "ct_abc123def456"
+          },
+          "last4": {
+            "type": "string",
+            "description": "Ultimos 4 digitos do cartao",
+            "example": "1111"
+          },
+          "brand": {
+            "type": "string",
+            "description": "Bandeira do cartao",
+            "example": "visa"
           }
         }
       }
