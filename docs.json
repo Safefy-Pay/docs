@@ -64,6 +64,7 @@
 									"api-reference/transactions/webhooks",
 									"api-reference/transactions/qr-code",
 									"api-reference/transactions/create",
+									"api-reference/transactions/card-tokenize",
 									"api-reference/transactions/list",
 									"api-reference/transactions/get",
 									"api-reference/transactions/simulate"
@@ -137,6 +138,7 @@
 									"en/api-reference/transactions/webhooks",
 									"en/api-reference/transactions/qr-code",
 									"en/api-reference/transactions/create",
+									"en/api-reference/transactions/card-tokenize",
 									"en/api-reference/transactions/list",
 									"en/api-reference/transactions/get",
 									"en/api-reference/transactions/simulate"
