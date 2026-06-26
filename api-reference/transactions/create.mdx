@@ -1,13 +1,14 @@
 ---
 title: "Criar transação"
-description: "Crie uma transação PIX ou boleto"
+description: "Crie uma transação PIX, boleto ou cartão de crédito"
 openapi: "/api-reference/openapi.json POST /v1/transactions"
 ---
 
-Cria uma transação PIX ou boleto.
+Cria uma transação PIX, boleto ou cartão de crédito.
 
 - **PIX**: Apenas `method` e `amount` são obrigatórios. Retorna o código **Copia e Cola** para pagamento.
 - **Boleto**: Requer `method`, `amount` e um cliente vinculado (`customerId` **ou** `customerName`). Retorna código de barras, linha digitável e URL do PDF.
+- **Cartão de Crédito**: Requer `method=CreditCard`, `amount` e os dados do cartão (`cardNumber`, `cardHolderName`, `cardExpirationMonth`, `cardExpirationYear`, `cardCvv`) **ou** um `cardToken` obtido via `POST /v1/card-tokenize`.
 
 <Info>
 A imagem do QR Code **não é retornada** pela API. Você deve gerar a imagem no seu frontend usando uma biblioteca de QR Code a partir do campo `copyAndPaste`.
@@ -16,7 +17,5 @@ Veja o guia dedicado: [Gerando QR Code do PIX](/api-reference/transactions/qr-co
 </Info>
 
 <Info>
-A partir de agora, você também pode usar **cartão tokenizado** como forma de pagamento!
-
-Consulte o guia dedicado: [Tokenizar cartão](/api-reference/transactions/card-tokenize).
+Você também pode usar **cartão tokenizado** como forma de pagamento! Consulte o guia dedicado: [Tokenizar cartão](/api-reference/transactions/card-tokenize).
 </Info>

@@ -1,10 +1,14 @@
 ﻿---
 title: "Create transaction"
-description: "Create a new PIX or Boleto charge"
+description: "Create a new PIX, Boleto, or Credit Card charge"
 openapi: "/api-reference/openapi.json POST /v1/transactions"
 ---
 
-Creates a new payment transaction. Supports **PIX** and **Boleto** payment methods.
+Creates a new payment transaction. Supports **PIX**, **Boleto**, and **Credit Card** payment methods.
+
+- **PIX**: Only `method` and `amount` are required. Returns the **Copy and Paste** code for payment.
+- **Boleto**: Requires `method`, `amount`, and a linked customer (`customerId` **or** `customerName`). Returns barcode, digitable line, and PDF URL.
+- **Credit Card**: Requires `method=CreditCard`, `amount`, and card data (`cardNumber`, `cardHolderName`, `cardExpirationMonth`, `cardExpirationYear`, `cardCvv`) **or** a `cardToken` obtained via `POST /v1/card-tokenize`.
 
 <Info>
 QR Code images are **not returned** by the API. You should generate the image in your frontend using the `pix.copyAndPaste` value.
@@ -13,7 +17,5 @@ See the dedicated guide: [Generating PIX QR Code](/en/api-reference/transactions
 </Info>
 
 <Info>
-You can now use **tokenized cards** as a payment method!
-
-Check out the dedicated guide: [Tokenize card](/en/api-reference/transactions/card-tokenize).
+You can also use **tokenized cards** as a payment method! Check out the dedicated guide: [Tokenize card](/en/api-reference/transactions/card-tokenize).
 </Info>
